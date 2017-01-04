@@ -6,12 +6,14 @@ import java.awt.*;
  */
 public class Mygraphic extends JPanel {
     double[] data;
+    String name;
     public Mygraphic(){
         setSize(700,700);
     }
-    public Mygraphic(double[] Inputdata){
+    public Mygraphic(double[] Inputdata, String name){
         setSize(700,700);
         data = Inputdata;
+        this.name = name;
     }
     Font fn = new Font("Arial", Font.PLAIN, 20);
     int x = 50;
@@ -38,7 +40,7 @@ public class Mygraphic extends JPanel {
         g2d.setColor(Color.black);
         g2d.drawString("%", x-20, y+40);
         g2d.drawString("Dose", x+570, y+620);
-        g2d.drawString("gtv",x+550,y+20);
+        g2d.drawString(name,x+550,y+20);
         g2d.setColor(Color.RED);
         for (int i = 0; i < data.length-1; i++) {
             g2d.drawLine(x+i*5,(int)(y+600-data[i]*500),x+(i+1)*5,(int)(y+600-data[i+1]*500));
