@@ -596,11 +596,20 @@ public class mainconnect implements ActionListener,ItemListener {
 //        HashMap<Double, HashSet<Point2D.Double>>bldSet =
 //                readRoiSet("//  ROI: " + rois[1], planPath+"\\plan.roi",ctParams);
 
-        HashMap<Double, HashSet<Point2D.Double>>lfSet =
-                readRoiSet("//  ROI: " + rois[3], planPath+"\\plan.roi",ctParams);
+        HashMap<Double, HashSet<Point2D.Double>>[] Sets = new HashMap[4];
 
-        HashMap<Double, HashSet<Point2D.Double>>rfSet =
-                readRoiSet("//  ROI: " + rois[2], planPath+"\\plan.roi",ctParams);
+        for (int i = 3; i < Sets.length; i++) {
+            Sets[i] = readRoiSet("//  ROI: " + rois[i], planPath+"\\plan.roi",ctParams);
+            HashMap<Double,ArrayList<Point2D.Double>> PTV = readRoi("//  ROI: " + rois[0],planPath+"\\plan.roi");
+            double[] DVHdata = DVH(Sets[i],dose_data,ctParams,doseParams);
+            double[] OVHdata = OVH(Sets[i],PTV);
+            Mygraphic mygraphic = new Mygraphic(OVHdata, rois[i]);
+            JFrame gFrame = new JFrame();
+            gFrame.setSize(700, 700);
+            gFrame.setVisible(true);
+            gFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            gFrame.getContentPane().add(mygraphic);
+        }
 
         System.out.println("ROI input finish");
 //        Set <Map.Entry<Double, HashSet<Point2D.Double>>> entrySet=lfSet.entrySet();
@@ -611,34 +620,34 @@ public class mainconnect implements ActionListener,ItemListener {
 //        System.out.println("ROI input finish");
 //        double[] DVHdata_p = DVH(ptvSet,dose_data,ctParams,doseParams);
 //        double[] DVHdata_b = DVH(bldSet,dose_data,ctParams,doseParams);
-        double[] DVHdata_l = DVH(lfSet,dose_data,ctParams,doseParams);
-        double[] DVHdata_r = DVH(rfSet,dose_data,ctParams,doseParams);
+//        double[] DVHdata_l = DVH(lfSet,dose_data,ctParams,doseParams);
+//        double[] DVHdata_r = DVH(rfSet,dose_data,ctParams,doseParams);
 
 //        Mygraphic mygraphic_p = new Mygraphic(DVHdata_p, "ptv");
 //        Mygraphic mygraphic_b = new Mygraphic(DVHdata_b, "bladder");
-        Mygraphic mygraphic_r = new Mygraphic(DVHdata_r, "rf");
-        Mygraphic mygraphic_l = new Mygraphic(DVHdata_l, "lf");
-
-        JFrame gFrame_p = new JFrame();
-        JFrame gFrame_b = new JFrame();
-        JFrame gFrame_r = new JFrame();
-        JFrame gFrame_l = new JFrame();
-        gFrame_p.setSize(700, 700);
-        gFrame_b.setSize(700, 700);
-        gFrame_r.setSize(700, 700);
-        gFrame_l.setSize(700, 700);
-        gFrame_b.setVisible(true);
-        gFrame_b.setVisible(true);
-        gFrame_r.setVisible(true);
-        gFrame_l.setVisible(true);
-        gFrame_p.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        gFrame_b.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        gFrame_l.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        gFrame_r.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//        Mygraphic mygraphic_r = new Mygraphic(DVHdata_r, "rf");
+//        Mygraphic mygraphic_l = new Mygraphic(DVHdata_l, "lf");
+//
+//        JFrame gFrame_p = new JFrame();
+//        JFrame gFrame_b = new JFrame();
+//        JFrame gFrame_r = new JFrame();
+//        JFrame gFrame_l = new JFrame();
+//        gFrame_p.setSize(700, 700);
+//        gFrame_b.setSize(700, 700);
+//        gFrame_r.setSize(700, 700);
+//        gFrame_l.setSize(700, 700);
+//        gFrame_b.setVisible(true);
+//        gFrame_b.setVisible(true);
+//        gFrame_r.setVisible(true);
+//        gFrame_l.setVisible(true);
+//        gFrame_p.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//        gFrame_b.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//        gFrame_l.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//        gFrame_r.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 //        gFrame_p.getContentPane().add(mygraphic_p);
 //        gFrame_b.getContentPane().add(mygraphic_b);
-        gFrame_r.getContentPane().add(mygraphic_r);
-        gFrame_l.getContentPane().add(mygraphic_l);
+//        gFrame_r.getContentPane().add(mygraphic_r);
+//        gFrame_l.getContentPane().add(mygraphic_l);
 //        for (int i = 0; i < DVHdata.length; i++) {
 //
 //        }
@@ -704,6 +713,34 @@ public class mainconnect implements ActionListener,ItemListener {
             integrated[i] = 1-probability[i];
         }
         return integrated;
+    }
+
+    public static double[] OVH(HashMap<Double, HashSet<Point2D.Double>> ROIset, HashMap<Double, ArrayList<Point2D.Double>> PTV){
+        int[] distribute = new int[100];
+        double[] probability = new double[100];
+        double[] integrated = new double[100];
+        double distance = 0;
+        int data_size=0;
+        Set <Map.Entry<Double, HashSet<Point2D.Double>>> entrySet=ROIset.entrySet();
+        for(Map.Entry<Double, HashSet<Point2D.Double>> entry: entrySet){
+            double key = entry.getKey();
+            data_size += ROIset.get(key).size();
+            MyPolygon2D ptvPolygon = new MyPolygon2D(PTV.get(key));
+            Iterator<Point2D.Double> it = ROIset.get(key).iterator();
+            for (int i = 0; i < ROIset.get(key).size(); i++) {
+                math.geom2d.Point2D tmp = new math.geom2d.Point2D(it.next());
+                distance = -ptvPolygon.boundary().signedDistance(tmp);
+                distribute[5+(int) Math.floor(distance)]++;
+            }
+        }
+        probability[0] = distribute[0] / data_size;
+        for (int i = 1; i < distribute.length; i++) {
+            probability[i] = distribute[i]/(double) data_size+probability[i-1];
+        }
+        for (int i = 0; i < probability.length; i++) {
+            integrated[i] = 1-probability[i];
+        }
+        return probability;
     }
 
     public static double interpolate(double [][] inter, double interdose[], double c[]){
@@ -813,5 +850,52 @@ public class mainconnect implements ActionListener,ItemListener {
         ObjectInputStream in =new ObjectInputStream(byteIn);
 
         return in.readObject();
+    }
+
+    public static HashMap<Double,ArrayList<Point2D.Double>> readRoi(String roi,String filepath){
+        //List polygons = new ArrayList<ArrayList<math.geom2d.Point2D>>();
+        try {
+            List polygon = new ArrayList<Point2D.Double>();
+            FileReader file = new FileReader(filepath);
+            BufferedReader breader = new BufferedReader(file);
+            String s;
+            //String pattern1 = roi;
+            HashMap<Double, ArrayList<Point2D.Double>> map = new HashMap<>();
+            while ((s = breader.readLine()) != null) {
+                if (s.indexOf(roi) == 0) {
+                    for (int i = 0; i < 7; i++) {
+                        breader.readLine();
+                    }
+                    String line;
+                    double f1, f2, f3 = 0;
+                    while (((line = breader.readLine()).indexOf("}")) == -1) {
+                        String str[] = line.split(" ");
+                        f1 = Double.parseDouble(str[0].trim());
+                        f2 = Double.parseDouble(str[1].trim());
+                        f3 = Double.parseDouble(str[2].trim());
+                        Point2D.Double polygon_point = new Point2D.Double(f1, f2);
+                        polygon.add(polygon_point);
+                    }
+                    //polygons.add(cloneObject(polygon));
+                    if (map.get(f3) != null) {
+                        ArrayList<Point2D.Double> tmp = map.get(f3);
+                        tmp.addAll(polygon);
+                        map.put(f3, (ArrayList<Point2D.Double>) cloneObject(tmp));
+                    } else {
+                        BigDecimal b = new BigDecimal(f3);
+                        map.put(b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue(), (ArrayList<Point2D.Double>) cloneObject(polygon));
+                    }
+                    //System.out.println(map.get(f3));
+                    polygon.clear();
+                }
+            }
+
+            file.close();
+            return map;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }
