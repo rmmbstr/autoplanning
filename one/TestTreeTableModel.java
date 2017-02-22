@@ -1,3 +1,5 @@
+package one;
+
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
 
 import javax.swing.tree.TreeNode;

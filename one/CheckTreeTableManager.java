@@ -1,7 +1,7 @@
-import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
+package one;
+
 import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -22,7 +22,6 @@ import java.lang.reflect.Field;
 
 import javax.swing.JToggleButton.ToggleButtonModel;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.ActionMapUIResource;
 import java.awt.event.*;
 /**
  * Created by ME on 2016/11/9.
