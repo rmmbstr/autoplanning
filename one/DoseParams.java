@@ -12,7 +12,7 @@ public class DoseParams {
     int XDim, YDim, ZDim;
     float VoxelSize;
     float XStart, YStart, ZStart;
-    float PrescriptionPercent, UnitsPerFraction;
+    float PrescriptionPercent, UnitsPerFraction, PrescriptionDose;
     int NumOfFraction;
     int i = 0;
     public DoseParams() {
@@ -29,6 +29,7 @@ public class DoseParams {
             this.ZStart = Float.parseFloat(readFile(PlanTrialPath, "  DoseGrid .Origin .Z = "));
             this.PrescriptionPercent = Float.parseFloat(readFile(PlanTrialPath, "      PrescriptionPercent = "));
             this.UnitsPerFraction = Float.parseFloat(readFile(PlanTrialPath, "      RequestedMonitorUnitsPerFraction = "));
+            this.PrescriptionDose = Float.parseFloat(readFile(PlanTrialPath, "      PrescriptionDose = "));
             this.NumOfFraction = Integer.parseInt(readFile(PlanTrialPath, "      NumberOfFractions = "));
             BufferedReader file1 = new BufferedReader(new FileReader(PlanTrialPath));
 
