@@ -36,15 +36,15 @@ public class mainconnect implements ActionListener,ItemListener {
     JLabel passLabel = new JLabel("Password");
     JLabel dbLabel = new JLabel("Database");
     JLabel cmdLabel =new JLabel("Command");
-//    JTextField addrText = new JTextField("127.0.0.1");
-    JTextField addrText = new JTextField("170.16.1.140");
+    JTextField addrText = new JTextField("192.168.1.121");
+//    JTextField addrText = new JTextField("170.16.1.140");
     JTextField portText = new JTextField("5432");
-//    JTextField unText = new JTextField("postgres");
-    JTextField unText = new JTextField("lpuser");
-//    JPasswordField passText = new JPasswordField("59623528");
-    JPasswordField passText = new JPasswordField("launchpad");
+    JTextField unText = new JTextField("postgres");
+//    JTextField unText = new JTextField("lpuser");
+    JPasswordField passText = new JPasswordField("59623528");
+//    JPasswordField passText = new JPasswordField("launchpad");
     JTextField dbText = new JTextField("clinical");
-    JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 2883\n" +
+    JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 4256\n" +
             "ORDER BY medicalrecordnumber\n" +
             "ASC ",3,60);
     JTextArea queryArea = new JTextArea(10,60);
@@ -69,8 +69,8 @@ public class mainconnect implements ActionListener,ItemListener {
     List<TreePath> treePathList = new ArrayList();
 
     String sep = File.separator;
-//    String rootpath = "F:\\";
-    String rootpath = "/";
+    String rootpath = "F:\\";
+//    String rootpath = "/";
     public static void main(String[] args) {
         mainconnect connect = new mainconnect();
         connect.go();
@@ -251,14 +251,15 @@ public class mainconnect implements ActionListener,ItemListener {
                 tree[i] = new JTree(treeNode[i]);
                 treeNode[i].add(new DefaultMutableTreeNode("Plan_0"));
                 treeNode[i].add(new DefaultMutableTreeNode("Plan_1"));
-                tree[i].addTreeSelectionListener(new TreeSelectionListener() {
-                    public void valueChanged(TreeSelectionEvent e) {
-                        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) e.getNewLeadSelectionPath()
-                                .getLastPathComponent();
-                        System.out.println("Current selected: " + selectedNode + ", leaf: " + selectedNode.isLeaf()
-                                + ", originObj: " + selectedNode.getUserObject().getClass());
-                    }
-                });
+
+//                tree[i].addTreeSelectionListener(new TreeSelectionListener() {
+//                    public void valueChanged(TreeSelectionEvent e) {
+//                        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) e.getNewLeadSelectionPath()
+//                                .getLastPathComponent();
+//                        System.out.println("Current selected: " + selectedNode + ", leaf: " + selectedNode.isLeaf()
+//                                + ", originObj: " + selectedNode.getUserObject().getClass());
+//                    }
+//                });
 //                checkBox[i].setText(result[i][0]);
 
                 i++;
@@ -320,8 +321,8 @@ public class mainconnect implements ActionListener,ItemListener {
         List<Patient> patientList = new ArrayList<Patient>();
         for (int j = 0; j < result.length; j++) {
             List<Plan> planList = new ArrayList<Plan>();
-            File dir = new File(rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_" + result[j][5] +
-                    sep+"Mount_0"+sep+"Patient_" + result[j][1]+sep);
+            File dir = new File(rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_"
+                    + result[j][5] + sep+"Mount_0"+sep+"Patient_" + result[j][1]+sep);
             File[] files = dir.listFiles();
             for (int k = 0; k < files.length; k++) {
                 if (files[k].isDirectory()) {
@@ -329,7 +330,8 @@ public class mainconnect implements ActionListener,ItemListener {
                         List<Trial> trialList = new ArrayList();
                         try {
                             String s;
-                            BufferedReader file1 = new BufferedReader(new FileReader(files[k].getPath()+sep+"plan.Trial"));
+                            BufferedReader file1 = new BufferedReader(new FileReader(files[k].getPath()
+                                    +sep+"plan.Trial"));
                             while (!(s = DoseParams.readFile(file1,"  Name = ")).equals("-1")) {
                                 trialList.add(new Trial(s.substring(1,s.length()-1)));
                                 System.out.println(s);
@@ -338,7 +340,7 @@ public class mainconnect implements ActionListener,ItemListener {
                         catch (Exception e){
                             e.printStackTrace();
                         }
-                        planList.add(new Plan(files[k].getName(), trialList, result[j][1]));
+                        planList.add(new Plan(files[k].getName(), trialList, result[j][1],result[j][0]));
                     }
                 }
             }
@@ -354,7 +356,18 @@ public class mainconnect implements ActionListener,ItemListener {
         manager.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener(){
             public void valueChanged(TreeSelectionEvent treeSelectionEvent){
                 for(TreePath path: treeSelectionEvent.getPaths()){
-                    treePathList.add(path);
+                    boolean flag = false;
+                    Iterator<TreePath> sListIterator = treePathList.iterator();
+                    while(sListIterator.hasNext()){
+                        TreePath e = sListIterator.next();
+                        if(e.equals(path)){
+                            sListIterator.remove();
+                            flag = true;
+                        }
+                    }
+                    if (!flag) {
+                        treePathList.add(path);
+                    }
 //                    System.out.println(path.getLastPathComponent()+": "+treeSelectionEvent.isAddedPath(path));
                 }
             }
@@ -400,17 +413,18 @@ public class mainconnect implements ActionListener,ItemListener {
         roiframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Container container = roiframe.getContentPane();
 
-        Boxes = new JComboBox[planList.size()][4];
+        Boxes = new JComboBox[planList.size()][8];
         for (int i = 0; i < planList.size(); i++) {
             Vector<String> roiList = new Vector();
             Plan tmp = planList.get(i);
-            JPanel jPanel = new JPanel(new GridLayout(5,2));
+            JPanel jPanel = new JPanel(new GridLayout(Boxes[0].length+1,2));
 //            roiframe.setLayout(new GridLayout(planList.size(),1));
             mainPanel.setLayout(new GridLayout(planList.size(),1));
             try {
                 String s;
-                BufferedReader file1 = new BufferedReader(new FileReader(rootpath+"pinnacle_patient_expansion" +
-                        sep+"NewPatients"+sep+"Institution_2883"+sep+"Mount_0"+sep+"Patient_" + tmp.getNumber()+sep+tmp.getId()+sep+"plan.roi"));
+                BufferedReader file1 = new BufferedReader(new FileReader(rootpath+"pinnacle_patient_expansion"
+                        + sep+"NewPatients"+sep+"Institution_4256"+sep+"Mount_0"+sep+"Patient_" + tmp.getNumber()+sep+
+                        tmp.getId()+sep+"plan.roi"));
                 while (!(s = DoseParams.readFile(file1,"           name: ")).equals("-1")) {
                     roiList.addElement(s);
 
@@ -419,26 +433,38 @@ public class mainconnect implements ActionListener,ItemListener {
 //                JComboBox jComboBox = new JComboBox(roiList);
                 jPanel.add(new JLabel("Patient:"+tmp.getNumber()+sep+tmp.getId()));
                 jPanel.add(new JLabel());
-                jPanel.add(new JLabel("PTV"));
+                jPanel.add(new JLabel("ROI1"));
 //                ptvBox = new JComboBox(roiList);
                 Boxes[i][0] = new JComboBox(roiList);
                 jPanel.add(Boxes[i][0]);
 //                jPanel.add(new JLabel("CTV"));
 //                jPanel.add(new JComboBox(roiList));
 //                jPanel.add(new JLabel("BLADDER"));
-                jPanel.add(new JLabel("HEART"));
+                jPanel.add(new JLabel("ROI2"));
                 Boxes[i][1] = new JComboBox(roiList);
                 jPanel.add(Boxes[i][1]);
 //                jPanel.add(new JLabel("BODY"));
 //                jPanel.add(new JComboBox(roiList));
 //                jPanel.add(new JLabel("RIGHT FEMORAL"));
-                jPanel.add(new JLabel("RIGHT LUNG"));
+                jPanel.add(new JLabel("ROI3"));
                 Boxes[i][2] = new JComboBox(roiList);
                 jPanel.add(Boxes[i][2]);
 //                jPanel.add(new JLabel("LEFT FEMORAL"));
-                jPanel.add(new JLabel("LEFT LUNG"));
+                jPanel.add(new JLabel("ROI4"));
                 Boxes[i][3] = new JComboBox(roiList);
                 jPanel.add(Boxes[i][3]);
+                jPanel.add(new JLabel("ROI5"));
+                Boxes[i][4] = new JComboBox(roiList);
+                jPanel.add(Boxes[i][4]);
+                jPanel.add(new JLabel("ROI6"));
+                Boxes[i][5] = new JComboBox(roiList);
+                jPanel.add(Boxes[i][5]);
+                jPanel.add(new JLabel("ROI7"));
+                Boxes[i][6] = new JComboBox(roiList);
+                jPanel.add(Boxes[i][6]);
+                jPanel.add(new JLabel("ROI8"));
+                Boxes[i][7] = new JComboBox(roiList);
+                jPanel.add(Boxes[i][7]);
                 mainPanel.add(jPanel);
 
             }
@@ -533,8 +559,8 @@ public class mainconnect implements ActionListener,ItemListener {
         }
     }
     void drawDVH(Plan plan){
-        String patientPath = rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_2883"+sep+"Mount_0"+sep+
-                "Patient_" + plan.getNumber();
+        String patientPath = rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_4256"
+                +sep+"Mount_0"+sep+ "Patient_" + plan.getNumber();
         String planPath = patientPath + sep + plan.getId();
         List<String> files = new ArrayList();
         try {
@@ -598,7 +624,8 @@ public class mainconnect implements ActionListener,ItemListener {
 //        }
 //        System.out.println(fileNum);
         for (int i = 0; i < files.size(); i++) {
-            String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d", Integer.parseInt(files.get(i)));
+            String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d",
+                    Integer.parseInt(files.get(i)));
 //            System.out.println(filePath);
             readDoseData(filePath, dose_data, doseParams.DoseWeight[i]);
         }
@@ -625,7 +652,8 @@ public class mainconnect implements ActionListener,ItemListener {
 
         for (int i = 0; i < Sets.length; i++) {
             Sets[i] = readRoiSet("//  ROI: " + rois[i], planPath+sep+"plan.roi",ctParams);
-            HashMap<Double,ArrayList<Point2D.Double>> PTV = readRoi("//  ROI: " + rois[0],planPath+sep+"plan.roi");
+            HashMap<Double,ArrayList<Point2D.Double>> PTV = readRoi("//  ROI: " + rois[0],planPath
+                    +sep+"plan.roi");
             double[] DVHdata = DVH(Sets[i],dose_data,ctParams,doseParams);
 //            double[] OVHdata = OVH(Sets[i],PTV);
             Mygraphic mygraphic = new Mygraphic(DVHdata, rois[i]);
@@ -687,7 +715,7 @@ public class mainconnect implements ActionListener,ItemListener {
             List<Double> distanceList = new ArrayList();
 //            List<Double> doseList = new ArrayList();
             Plan plan = planList.get(i);
-            String patientPath = rootpath+sep+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_2883"+
+            String patientPath = rootpath+sep+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_4256"+
                     sep+"Mount_0"+sep + "Patient_" + plan.getNumber();
             String planPath = patientPath + sep + plan.getId();
             List<String> files = new ArrayList();
@@ -716,14 +744,14 @@ public class mainconnect implements ActionListener,ItemListener {
                 }
             }
 
-            String[] rois = new String[4];
-            rois[0] = (String) Boxes[i][0].getSelectedItem();
-            rois[1] = (String) Boxes[i][1].getSelectedItem();
-            rois[2] = (String) Boxes[i][2].getSelectedItem();
-            rois[3] = (String) Boxes[i][3].getSelectedItem();
+            String[] rois = new String[Boxes[0].length];
+            for (int j = 0; j < rois.length; j++) {
+                rois[j] = (String) Boxes[i][j].getSelectedItem();
+            }
 
             for (int j = 0; j < files.size(); j++) {
-                String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d", Integer.parseInt(files.get(j)));
+                String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d",
+                        Integer.parseInt(files.get(j)));
 //            System.out.println(filePath);
                 readDoseData(filePath, dose_data, doseParams.DoseWeight[j]);
 //                System.out.println(files.get(j)+"weight "+doseParams.DoseWeight[j]);
@@ -758,14 +786,16 @@ public class mainconnect implements ActionListener,ItemListener {
             double dose_Ystart = doseParams.YStart;
             double dose_Zstart = doseParams.ZStart;
             int data_size = 0;
-            HashMap<Double, HashSet<Point2D.Double>>[] Sets = new HashMap[4];
-
+            HashMap<Double, HashSet<Point2D.Double>>[] Sets = new HashMap[rois.length];
+            HashMap<Double, HashSet<Point2D.Double>> meanDoseRoi = new HashMap<>();
 //            int[] distribute = new int[100];
 //            CsvWriter cwd = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"density.csv",',',
 //                    Charset.forName("UTF-8"));
 //            CsvWriter cwd = new CsvWriter("C://Users/ME/Desktop/"+plan.getNumber()+"density.csv",',',
 //                    Charset.forName("UTF-8"));
-            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"_"+plan.getId()+".csv",',',
+//            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"_"+plan.getId()+".csv",',',
+//                    Charset.forName("UTF-8"));
+            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+plan.getNumber()+"_"+plan.getId()+".csv",',',
                     Charset.forName("UTF-8"));
             String[] doseAxis = new String[2001];
             doseAxis[0]="Dose";
@@ -779,6 +809,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 e.printStackTrace();
             }
             double meanDose = 0;
+            double ratio = 0;
             FileOutputStream fs = null;
 //            PrintStream pr = null;
             try{
@@ -788,6 +819,52 @@ public class mainconnect implements ActionListener,ItemListener {
             catch (Exception e){
                 e.printStackTrace();
             }
+            {
+                int count = 0;
+                double sum = 0;
+//                System.out.println(doseParams.PrescriptionRoi+" "+doseParams.PrescriptionMethod+" "+doseParams.NormalizationMethod);
+                if (!(doseParams.PrescriptionMethod.equals("Prescribe")&&doseParams.NormalizationMethod.equals("ROI Mean")))
+                    System.out.println("Warning: Normalization not correct");
+                meanDoseRoi = readRoiSet("//  ROI: " + doseParams.PrescriptionRoi,
+                        planPath + sep + "plan.roi", ctParams);
+                Set<Map.Entry<Double, HashSet<Point2D.Double>>> entrySet = meanDoseRoi.entrySet();
+                for (Map.Entry<Double, HashSet<Point2D.Double>> entry : entrySet) {
+                    double key = entry.getKey();
+                    data_size += meanDoseRoi.get(key).size();
+                    Iterator<Point2D.Double> it = meanDoseRoi.get(key).iterator();
+                    for (int k = 0; k < meanDoseRoi.get(key).size(); k++) {
+                        math.geom2d.Point2D tmp = new math.geom2d.Point2D(it.next());
+                        c[0] = tmp.getX();
+                        c[1] = tmp.getY();
+                        c[2] = key;
+                        dose_x = (int) Math.ceil((CT_Xstart - dose_Xstart) / .4 - 1 + CT_STEP / .4 * (c[0] - CT_Xstart)
+                                / CT_STEP);
+                        dose_y = (int) Math.ceil((CT_Ystart - dose_Ystart) / .4 - 1 + CT_STEP / .4 * (c[1] - CT_Ystart)
+                                / CT_STEP);
+                        dose_z = (int) Math.ceil((CT_Zstart - dose_Zstart) / .4 - 1 + CT_STEPZ / .4 * (c[2] - CT_Zstart)
+                                / CT_STEPZ);
+                        for (int p = 0; p < 2; p++) {
+                            for (int l = 0; l < 2; l++) {
+                                for (int m = 0; m < 2; m++) {
+                                    inter[p * 4 + l * 2 + m][0] = dose_Xstart + 0.4 * (dose_x + p);
+                                    inter[p * 4 + l * 2 + m][1] = dose_Ystart + 0.4 * (dose_y + l);
+                                    inter[p * 4 + l * 2 + m][2] = dose_Zstart + 0.4 * (dose_z + m);
+                                    interdose[p * 4 + l * 2 + m] = dose_data[dose_z + m][dose_y + l][dose_x + p];
+                                }
+                            }
+                        }
+                        double x0 = interpolate(inter, interdose, c) * doseParams.NumOfFraction *
+                                doseParams.UnitsPerFraction / doseParams.PrescriptionPercent * 100;
+                        sum += x0;
+                        count++;
+                    }
+                }
+                meanDose = sum/count;
+                ratio = meanDose/(doseParams.PrescriptionDose*100d/doseParams.PrescriptionPercent
+                        *doseParams.NumOfFraction);
+            }
+            System.out.println("meanDose="+meanDose/ratio);
+
             for (int j = 0; j < Sets.length; j++) {
                 double[] distribute = new double[2000];
                 List<Double> doseList = new ArrayList();
@@ -814,9 +891,12 @@ public class mainconnect implements ActionListener,ItemListener {
                         c[0] = tmp.getX();
                         c[1] = tmp.getY();
                         c[2] = key;
-                        dose_x = (int) Math.ceil((CT_Xstart - dose_Xstart) / .4 - 1 + CT_STEP / .4 * (c[0] - CT_Xstart) / CT_STEP);
-                        dose_y = (int) Math.ceil((CT_Ystart - dose_Ystart) / .4 - 1 + CT_STEP / .4 * (c[1] - CT_Ystart) / CT_STEP);
-                        dose_z = (int) Math.ceil((CT_Zstart - dose_Zstart) / .4 - 1 + CT_STEPZ / .4 * (c[2] - CT_Zstart) / CT_STEPZ);
+                        dose_x = (int) Math.ceil((CT_Xstart - dose_Xstart) / .4 - 1 + CT_STEP / .4 * (c[0] - CT_Xstart)
+                                / CT_STEP);
+                        dose_y = (int) Math.ceil((CT_Ystart - dose_Ystart) / .4 - 1 + CT_STEP / .4 * (c[1] - CT_Ystart)
+                                / CT_STEP);
+                        dose_z = (int) Math.ceil((CT_Zstart - dose_Zstart) / .4 - 1 + CT_STEPZ / .4 * (c[2] - CT_Zstart)
+                                / CT_STEPZ);
                         for (int p = 0; p < 2; p++) {
                             for (int l = 0; l < 2; l++) {
                                 for (int m = 0; m < 2; m++) {
@@ -827,7 +907,8 @@ public class mainconnect implements ActionListener,ItemListener {
                                 }
                             }
                         }
-                        double x0 = interpolate(inter, interdose, c) * doseParams.NumOfFraction * doseParams.UnitsPerFraction / doseParams.PrescriptionPercent * 100;
+                        double x0 = interpolate(inter, interdose, c) * doseParams.NumOfFraction *
+                                doseParams.UnitsPerFraction / doseParams.PrescriptionPercent * 100;
 //                        double distance = -ptvPolygon.boundary().signedDistance(tmp);
                         double distance = 0;
                         doseList.add(x0);
@@ -846,7 +927,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     }
                 }
 
-                System.out.println(plan.getNumber()+" "+rois[j]+" done!");
+                System.out.println(plan.getMrn()+" "+rois[j]+" done!");
                 double[] doseD = new double[doseList.size()];
                 double[] distanceD = new double[distanceList.size()];
 
@@ -859,17 +940,18 @@ public class mainconnect implements ActionListener,ItemListener {
                 REXPDouble doseVector = new REXPDouble(doseD);
                 REXPDouble distanceVector = new REXPDouble(distanceD);
 
-                if (j==0){
-                    double sum = 0;
-                    for (int k = 0; k < doseD.length; k++) {
-                        sum += doseD[k];
-                    }
-                    meanDose = sum/doseD.length;
-//                    System.out.println("meandose="+meanDose);
-                }
+//                if (j==0){
+//                    double sum = 0;
+//                    for (int k = 0; k < doseD.length; k++) {
+//                        sum += doseD[k];
+//                    }
+//                    meanDose = sum/doseD.length;
+////                    System.out.println("meandose="+meanDose);
+//                }
 
                 try {
-                    double ratio = meanDose/(doseParams.PrescriptionDose*100d/doseParams.PrescriptionPercent*doseParams.NumOfFraction);
+//                    double ratio = meanDose/(doseParams.PrescriptionDose*100d/doseParams.PrescriptionPercent
+//                            *doseParams.NumOfFraction);
 //                    System.out.println("ratio="+ratio);
 //                    System.out.println("meandose="+meanDose/ratio);
                     for (int k = 0; k < doseD.length; k++) {
@@ -936,8 +1018,8 @@ public class mainconnect implements ActionListener,ItemListener {
         HashMap<Double, HashSet<Point2D.Double>>[] Sets = new HashMap[ROInum];
         for (int i = 0; i < planList.size(); i++) {
             Plan plan = planList.get(i);
-            String patientPath = rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_2883"+sep+"Mount_0"+sep +
-                    "Patient_" + plan.getNumber();
+            String patientPath = rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_4256"
+                    +sep+"Mount_0"+sep + "Patient_" + plan.getNumber();
             CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"_"+plan.getId()+".csv",',',
                     Charset.forName("UTF-8"));
             String planPath = patientPath + sep+ plan.getId();
@@ -973,7 +1055,8 @@ public class mainconnect implements ActionListener,ItemListener {
             }
 
             for (int j = 0; j < files.size(); j++) {
-                String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d", Integer.parseInt(files.get(j)));
+                String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d",
+                        Integer.parseInt(files.get(j)));
                 readDoseData(filePath, dose_data, doseParams.DoseWeight[j]);
             }
             System.out.println("Dose input finish");
@@ -1037,9 +1120,12 @@ public class mainconnect implements ActionListener,ItemListener {
                 c[0] = tmp.getX();
                 c[1] = tmp.getY();
                 c[2] = key;
-                dose_x = (int) Math.ceil((CT_Xstart - dose_Xstart) / .4 - 1 + CT_STEP / .4 * (c[0] - CT_Xstart) / CT_STEP);
-                dose_y = (int) Math.ceil((CT_Ystart - dose_Ystart) / .4 - 1 + CT_STEP / .4 * (c[1] - CT_Ystart) / CT_STEP);
-                dose_z = (int) Math.ceil((CT_Zstart - dose_Zstart) / .4 - 1 + CT_STEPZ / .4 * (c[2] - CT_Zstart) / CT_STEPZ);
+                dose_x = (int) Math.ceil((CT_Xstart - dose_Xstart) / .4 - 1 + CT_STEP / .4 * (c[0] - CT_Xstart)
+                        / CT_STEP);
+                dose_y = (int) Math.ceil((CT_Ystart - dose_Ystart) / .4 - 1 + CT_STEP / .4 * (c[1] - CT_Ystart)
+                        / CT_STEP);
+                dose_z = (int) Math.ceil((CT_Zstart - dose_Zstart) / .4 - 1 + CT_STEPZ / .4 * (c[2] - CT_Zstart)
+                        / CT_STEPZ);
                 for (int k = 0; k < 2; k++) {
                     for (int l = 0; l < 2; l++) {
                         for (int m = 0; m < 2; m++) {
@@ -1050,7 +1136,8 @@ public class mainconnect implements ActionListener,ItemListener {
                         }
                     }
                 }
-                double x0 = interpolate(inter, interdose, c) * doseParams.NumOfFraction * doseParams.UnitsPerFraction / doseParams.PrescriptionPercent * 100;
+                double x0 = interpolate(inter, interdose, c) * doseParams.NumOfFraction *
+                        doseParams.UnitsPerFraction / doseParams.PrescriptionPercent * 100;
                 distribute[(int) Math.floor(x0 / 100)]++;
             }
         }
@@ -1065,7 +1152,8 @@ public class mainconnect implements ActionListener,ItemListener {
         return integrated;
     }
 
-    public static double[] OVH(HashMap<Double, HashSet<Point2D.Double>> ROIset, HashMap<Double, ArrayList<Point2D.Double>> PTV){
+    public static double[] OVH(HashMap<Double, HashSet<Point2D.Double>> ROIset, HashMap<Double,
+            ArrayList<Point2D.Double>> PTV){
         int[] distribute = new int[100];
         double[] probability = new double[100];
         double[] integrated = new double[100];
@@ -1237,7 +1325,8 @@ public class mainconnect implements ActionListener,ItemListener {
                         map.put(f3, (ArrayList<Point2D.Double>) cloneObject(tmp));
                     } else {
                         BigDecimal b = new BigDecimal(f3);
-                        map.put(b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue(), (ArrayList<Point2D.Double>) cloneObject(polygon));
+                        map.put(b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue(),
+                                (ArrayList<Point2D.Double>) cloneObject(polygon));
                     }
                     //System.out.println(map.get(f3));
                     polygon.clear();

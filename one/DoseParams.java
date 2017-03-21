@@ -14,6 +14,7 @@ public class DoseParams {
     float XStart, YStart, ZStart;
     float PrescriptionPercent, UnitsPerFraction, PrescriptionDose;
     int NumOfFraction;
+    String PrescriptionRoi,PrescriptionMethod,NormalizationMethod;
     int i = 0;
     public DoseParams() {
     }
@@ -31,6 +32,12 @@ public class DoseParams {
             this.UnitsPerFraction = Float.parseFloat(readFile(PlanTrialPath, "      RequestedMonitorUnitsPerFraction = "));
             this.PrescriptionDose = Float.parseFloat(readFile(PlanTrialPath, "      PrescriptionDose = "));
             this.NumOfFraction = Integer.parseInt(readFile(PlanTrialPath, "      NumberOfFractions = "));
+            this.PrescriptionRoi = readFile(PlanTrialPath,"      PrescriptionRoi = ");
+            this.PrescriptionRoi = this.PrescriptionRoi.substring(1,this.PrescriptionRoi.length()-1);
+            this.PrescriptionMethod = readFile(PlanTrialPath,"      Method = ");
+            this.PrescriptionMethod = this.PrescriptionMethod.substring(1,this.PrescriptionMethod.length()-1);
+            this.NormalizationMethod = readFile(PlanTrialPath,"      NormalizationMethod = ");
+            this.NormalizationMethod = this.NormalizationMethod.substring(1,this.NormalizationMethod.length()-1);
             BufferedReader file1 = new BufferedReader(new FileReader(PlanTrialPath));
 
 
