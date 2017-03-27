@@ -3,12 +3,17 @@ package one;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import static one.mainconnect.cloneObject;
 
 /**
  * Created by ME on 2016/4/9.
  */
 public class DoseParams {
-    float DoseWeight[] = new float[40];
+    HashMap<String, List<Double>> DoseWeight = new HashMap<>();
     int XDim, YDim, ZDim;
     float VoxelSize;
     float XStart, YStart, ZStart;
@@ -19,7 +24,7 @@ public class DoseParams {
     public DoseParams() {
     }
     public DoseParams(String PlanTrialPath){
-        float weightSum = 0;
+
         try {
             this.XDim = Integer.parseInt(readFile(PlanTrialPath, "  DoseGrid .Dimension .X = "));
             this.YDim = Integer.parseInt(readFile(PlanTrialPath, "  DoseGrid .Dimension .Y = "));
@@ -41,22 +46,46 @@ public class DoseParams {
             BufferedReader file1 = new BufferedReader(new FileReader(PlanTrialPath));
 
 
-            while (true) {
-                DoseWeight[i] = Float.parseFloat(readFile(file1, "      Weight = "));
-                if (DoseWeight[i] == -1)
-                    break;
-                weightSum += DoseWeight[i];
-                i++;
+
+            String s;
+            String pattern = "      Weight = ";
+            while ((s = file1.readLine()) != null){
+                if (s.indexOf("  Name = ") == 0) {
+                    float weightSum = 0;
+                    List<Double> tmpLst = new ArrayList<>();
+                    String line;
+                    while (((line = file1.readLine()).indexOf("}")) != 0) {
+                        if (line.indexOf(pattern)==0){
+                            String tmp = line.substring(pattern.length(),line.length()-1).trim();
+                            tmpLst.add(Double.parseDouble(tmp));
+                        }
+                    }
+                    for (int j = 0; j < tmpLst.size(); j++) {
+                        weightSum += tmpLst.get(j);
+                    }
+                    for (int j = 0; j < tmpLst.size(); j++) {
+                        tmpLst.set(j,tmpLst.get(j)/weightSum);
+                    }
+                    DoseWeight.put(s.substring(10,s.length()-2),(ArrayList<Double>) cloneObject(tmpLst));
+                }
+
             }
+//            while (true) {
+//                DoseWeight[i] = Float.parseFloat(readFile(file1, "      Weight = "));
+//                if (DoseWeight[i] == -1)
+//                    break;
+//                weightSum += DoseWeight[i];
+//                i++;
+//            }
         }
-        catch (IOException e){
+        catch (Exception e){
             e.printStackTrace();
         }
 
-        for (int j = 0; j < DoseWeight.length; j++) {
-            if (DoseWeight[j] != -1)
-                DoseWeight[j] = DoseWeight[j]/weightSum;
-        }
+//        for (int j = 0; j < DoseWeight.length; j++) {
+//            if (DoseWeight[j] != -1)
+//                DoseWeight[j] = DoseWeight[j]/weightSum;
+//        }
 //        for (int i = 0; i < 9; i++) {
 //            DoseWeight[i]=Float.parseFloat(MyClass.readFile(file1,"      Weight = "));
 //        }

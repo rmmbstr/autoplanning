@@ -333,8 +333,9 @@ public class mainconnect implements ActionListener,ItemListener {
                             BufferedReader file1 = new BufferedReader(new FileReader(files[k].getPath()
                                     +sep+"plan.Trial"));
                             while (!(s = DoseParams.readFile(file1,"  Name = ")).equals("-1")) {
-                                trialList.add(new Trial(s.substring(1,s.length()-1)));
-                                System.out.println(s);
+                                trialList.add(new Trial(s.substring(1,s.length()-1),result[j][1],result[j][0],
+                                        files[k].getName()));
+                                System.out.println(s.substring(1,s.length()-1));
                             }
                         }
                         catch (Exception e){
@@ -384,6 +385,7 @@ public class mainconnect implements ActionListener,ItemListener {
 
     }
     List<Plan> globalPlanList = new ArrayList();
+    List<Trial> globalTrialList = new ArrayList();
     JComboBox[][] Boxes;
 
     void selectData(){
@@ -395,43 +397,69 @@ public class mainconnect implements ActionListener,ItemListener {
             TreePath treePath = treePathList.get(i);
             Object tmp = treePath.getLastPathComponent();
             if (tmp instanceof Patient) {
-                planList.addAll(((Patient) tmp).getPlanList());
+                List<Plan> tmpList = new ArrayList();
+                tmpList = ((Patient) tmp).getPlanList();
+                for (int j = 0; j < tmpList.size(); j++) {
+                    trialList.addAll(tmpList.get(j).getTrialList());
+                }
+
             }
             if (tmp instanceof Plan) {
-                planList.add((Plan) tmp);
+                trialList.addAll(((Plan) tmp).getTrialList());
 //                ((Patient) treePath.getPathComponent(1)).getMrn() + ((Plan) tmp).getId();
             }
             if (tmp instanceof Trial) {
-                planList.add((Plan) treePath.getPathComponent(2));
+                trialList.add((Trial) treePath.getPathComponent(3));
 //                System.out.println(((Patient) treePath.getPathComponent(1)).getMrn() +
 //                        ((Plan) treePath.getPathComponent(2)).getId() + ((Trial) tmp).getName());
             }
         }
+// planlist添加
+//       for (int i = 0; i < treePathList.size(); i++) {
+////            System.out.println(treePathList.get(i));
+//            TreePath treePath = treePathList.get(i);
+//            Object tmp = treePath.getLastPathComponent();
+//            if (tmp instanceof Patient) {
+//                planList.addAll(((Patient) tmp).getPlanList());
+//            }
+//            if (tmp instanceof Plan) {
+//                planList.add((Plan) tmp);
+////                ((Patient) treePath.getPathComponent(1)).getMrn() + ((Plan) tmp).getId();
+//            }
+//            if (tmp instanceof Trial) {
+//                planList.add((Plan) treePath.getPathComponent(2));
+////                System.out.println(((Patient) treePath.getPathComponent(1)).getMrn() +
+////                        ((Plan) treePath.getPathComponent(2)).getId() + ((Trial) tmp).getName());
+//            }
+//        }
+
+
+        globalTrialList.addAll(trialList);
         globalPlanList.addAll(planList);
         JFrame roiframe = new JFrame();
         JPanel mainPanel = new JPanel();
         roiframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Container container = roiframe.getContentPane();
 
-        Boxes = new JComboBox[planList.size()][8];
-        for (int i = 0; i < planList.size(); i++) {
+        Boxes = new JComboBox[trialList.size()][8];
+        for (int i = 0; i < trialList.size(); i++) {
             Vector<String> roiList = new Vector();
-            Plan tmp = planList.get(i);
+            Trial tmp = trialList.get(i);
             JPanel jPanel = new JPanel(new GridLayout(Boxes[0].length+1,2));
 //            roiframe.setLayout(new GridLayout(planList.size(),1));
-            mainPanel.setLayout(new GridLayout(planList.size(),1));
+            mainPanel.setLayout(new GridLayout(trialList.size(),1));
             try {
                 String s;
                 BufferedReader file1 = new BufferedReader(new FileReader(rootpath+"pinnacle_patient_expansion"
                         + sep+"NewPatients"+sep+"Institution_4256"+sep+"Mount_0"+sep+"Patient_" + tmp.getNumber()+sep+
-                        tmp.getId()+sep+"plan.roi"));
+                        tmp.getPlanId()+sep+"plan.roi"));
                 while (!(s = DoseParams.readFile(file1,"           name: ")).equals("-1")) {
                     roiList.addElement(s);
 
 //                    System.out.println(s);
                 }
 //                JComboBox jComboBox = new JComboBox(roiList);
-                jPanel.add(new JLabel("Patient:"+tmp.getNumber()+sep+tmp.getId()));
+                jPanel.add(new JLabel("Patient:"+tmp.getMrn()+sep+tmp.getPlanId()+sep+tmp.getName()));
                 jPanel.add(new JLabel());
                 jPanel.add(new JLabel("ROI1"));
 //                ptvBox = new JComboBox(roiList);
@@ -525,7 +553,7 @@ public class mainconnect implements ActionListener,ItemListener {
             case 2: disConnectServer();break;
             case 3: queryDatabase();break;
             case 4: selectData();break;
-            case 5: Process(globalPlanList,Boxes);break;
+            case 5: Process(globalTrialList,Boxes);break;
 //            case 5:outputDVH(globalPlanList,Boxes);break;
 //            case "Process": drawDVH(globalPlanList.get(0));break;
             default: break;
@@ -541,7 +569,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //        }
     }
 
-    static void  readDoseData(String path, float[][][] dosedata, float weight) {
+    static void  readDoseData(String path, float[][][] dosedata, double weight) {
         try {
             RandomAccessFile file1 = new RandomAccessFile(path, "r");
             file1.seek(0);
@@ -627,7 +655,7 @@ public class mainconnect implements ActionListener,ItemListener {
             String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d",
                     Integer.parseInt(files.get(i)));
 //            System.out.println(filePath);
-            readDoseData(filePath, dose_data, doseParams.DoseWeight[i]);
+//            readDoseData(filePath, dose_data, doseParams.DoseWeight[i]);
         }
 
         System.out.println("Dose input finish");
@@ -706,27 +734,43 @@ public class mainconnect implements ActionListener,ItemListener {
 //        }
     }
 
-    void Process(List<Plan> planList, JComboBox[][] Boxes){
+    void Process(List<Trial> trialList, JComboBox[][] Boxes){
 //        RList doseList = new RList();
 //        RList distanceList = new RList();
 
 
-        for (int i = 0; i < planList.size(); i++) {
+        for (int i = 0; i < trialList.size(); i++) {
             List<Double> distanceList = new ArrayList();
 //            List<Double> doseList = new ArrayList();
-            Plan plan = planList.get(i);
+            Trial trial = trialList.get(i);
             String patientPath = rootpath+sep+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_4256"+
-                    sep+"Mount_0"+sep + "Patient_" + plan.getNumber();
-            String planPath = patientPath + sep + plan.getId();
+                    sep+"Mount_0"+sep + "Patient_" + trial.getNumber();
+            String planPath = patientPath + sep + trial.getPlanId();
             List<String> files = new ArrayList();
             try {
+                String trialName = "  Name = \""+trial.getName()+"\";";
                 String s;
+                String pattern = "      DoseVolume = \\XDR:";
                 BufferedReader file1 = new BufferedReader(new FileReader(planPath+sep+"plan.Trial"));
-                while (!((s = DoseParams.readFile(file1,"      DoseVolume = \\XDR:")).equals("-1"))) {
-                    files.add(s.substring(0,s.lastIndexOf("\\")));
-//                System.out.println(s.substring(0,s.lastIndexOf("\\")));
-                }
+//                while (!((s = DoseParams.readFile(file1,"      DoseVolume = \\XDR:")).equals("-1"))) {
+//                    files.add(s.substring(0,s.lastIndexOf("\\")));
+////                System.out.println(s.substring(0,s.lastIndexOf("\\")));
+//                }
 //                files.remove(files.size()-1);
+                while ((s = file1.readLine()) != null){
+                    if (s.indexOf(trialName) == 0) {
+                        String line;
+                        while (((line = file1.readLine()).indexOf("}")) != 0) {
+//                            String tmp = DoseParams.readFile(file1,"      DoseVolume = \\XDR:");
+//                            files.add(tmp.substring(0,s.lastIndexOf("\\")));
+                            if (line.indexOf(pattern)==0){
+                                String tmp = line.substring(pattern.length(),line.length()-2).trim();
+                                files.add(tmp);
+                            }
+                        }
+                    }
+                }
+                file1.close();
             }
             catch (Exception e){
                 e.printStackTrace();
@@ -748,13 +792,18 @@ public class mainconnect implements ActionListener,ItemListener {
             for (int j = 0; j < rois.length; j++) {
                 rois[j] = (String) Boxes[i][j].getSelectedItem();
             }
-
+            Set<Map.Entry<String, List<Double>>> set = doseParams.DoseWeight.entrySet();
+            for (Map.Entry<String, List<Double>> entry:set){
+                String key = entry.getKey();
+                System.out.println(key);
+            }
             for (int j = 0; j < files.size(); j++) {
                 String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d",
                         Integer.parseInt(files.get(j)));
 //            System.out.println(filePath);
-                readDoseData(filePath, dose_data, doseParams.DoseWeight[j]);
-//                System.out.println(files.get(j)+"weight "+doseParams.DoseWeight[j]);
+
+                readDoseData(filePath, dose_data, doseParams.DoseWeight.get(trial.getName()).get(j));
+                System.out.println(files.get(j)+"weight "+doseParams.DoseWeight.get(trial.getName()).get(j));
             }
             System.out.println("Dose input finish");
 
@@ -795,7 +844,8 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    Charset.forName("UTF-8"));
 //            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"_"+plan.getId()+".csv",',',
 //                    Charset.forName("UTF-8"));
-            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+plan.getNumber()+"_"+plan.getId()+".csv",',',
+            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
+                    trial.getName()+".csv",',',
                     Charset.forName("UTF-8"));
             String[] doseAxis = new String[2001];
             doseAxis[0]="Dose";
@@ -863,6 +913,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 ratio = meanDose/(doseParams.PrescriptionDose*100d/doseParams.PrescriptionPercent
                         *doseParams.NumOfFraction);
             }
+
             System.out.println("meanDose="+meanDose/ratio);
 
             for (int j = 0; j < Sets.length; j++) {
@@ -927,7 +978,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     }
                 }
 
-                System.out.println(plan.getMrn()+" "+rois[j]+" done!");
+                System.out.println(trial.getMrn()+" "+rois[j]+" done!");
                 double[] doseD = new double[doseList.size()];
                 double[] distanceD = new double[distanceList.size()];
 
@@ -1057,7 +1108,7 @@ public class mainconnect implements ActionListener,ItemListener {
             for (int j = 0; j < files.size(); j++) {
                 String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d",
                         Integer.parseInt(files.get(j)));
-                readDoseData(filePath, dose_data, doseParams.DoseWeight[j]);
+//                readDoseData(filePath, dose_data, doseParams.DoseWeight[j]);
             }
             System.out.println("Dose input finish");
             double meanDose = 0;
