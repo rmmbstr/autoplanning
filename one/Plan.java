@@ -7,13 +7,14 @@ import java.util.List;
  */
 public class Plan{
     String id;
-    String Number,mrn;
+    String Number,mrn,institution;
     List<Trial> trialList;
-    Plan(String id, List<Trial> trialList, String Number,String mrn){
+    Plan(String id, List<Trial> trialList, String Number,String mrn,String institution){
         this.id = id;
         this.trialList = trialList;
         this.Number = Number;
         this.mrn = mrn;
+        this.institution = institution;
     }
     Plan(String id){
         this.id = id;
@@ -43,5 +44,9 @@ public class Plan{
 
     public String getMrn() {
         return mrn;
+    }
+
+    public String getInstitution() {
+        return institution;
     }
 }

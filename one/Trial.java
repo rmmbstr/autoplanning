@@ -5,12 +5,13 @@ package one;
  */
 public class Trial{
     String name,planId;
-    String Number,mrn;
-    public Trial(String name, String number,String mrn, String planId){
+    String Number,mrn,institution;
+    public Trial(String name, String number,String mrn, String planId,String institution){
         this.name = name;
         Number = number;
         this.mrn = mrn;
         this.planId = planId;
+        this.institution = institution;
     }
 
     public String getName() {
@@ -38,5 +39,9 @@ public class Trial{
 
     public String getPlanId() {
         return planId;
+    }
+
+    public String getInstitution() {
+        return institution;
     }
 }

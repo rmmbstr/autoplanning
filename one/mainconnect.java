@@ -334,14 +334,14 @@ public class mainconnect implements ActionListener,ItemListener {
                                     +sep+"plan.Trial"));
                             while (!(s = DoseParams.readFile(file1,"  Name = ")).equals("-1")) {
                                 trialList.add(new Trial(s.substring(1,s.length()-1),result[j][1],result[j][0],
-                                        files[k].getName()));
+                                        files[k].getName(),result[j][5]));
                                 System.out.println(s.substring(1,s.length()-1));
                             }
                         }
                         catch (Exception e){
                             e.printStackTrace();
                         }
-                        planList.add(new Plan(files[k].getName(), trialList, result[j][1],result[j][0]));
+                        planList.add(new Plan(files[k].getName(), trialList, result[j][1],result[j][0],result[j][5]));
                     }
                 }
             }
@@ -451,8 +451,8 @@ public class mainconnect implements ActionListener,ItemListener {
             try {
                 String s;
                 BufferedReader file1 = new BufferedReader(new FileReader(rootpath+"pinnacle_patient_expansion"
-                        + sep+"NewPatients"+sep+"Institution_4256"+sep+"Mount_0"+sep+"Patient_" + tmp.getNumber()+sep+
-                        tmp.getPlanId()+sep+"plan.roi"));
+                        + sep+"NewPatients"+sep+"Institution_"+tmp.getInstitution()+sep+"Mount_0"+sep+"Patient_"
+                        + tmp.getNumber()+sep+ tmp.getPlanId()+sep+"plan.roi"));
                 while (!(s = DoseParams.readFile(file1,"           name: ")).equals("-1")) {
                     roiList.addElement(s);
 
@@ -587,8 +587,8 @@ public class mainconnect implements ActionListener,ItemListener {
         }
     }
     void drawDVH(Plan plan){
-        String patientPath = rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_4256"
-                +sep+"Mount_0"+sep+ "Patient_" + plan.getNumber();
+        String patientPath = rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_"
+                +plan.getInstitution() +sep+"Mount_0"+sep+ "Patient_" + plan.getNumber();
         String planPath = patientPath + sep + plan.getId();
         List<String> files = new ArrayList();
         try {
@@ -743,8 +743,8 @@ public class mainconnect implements ActionListener,ItemListener {
             List<Double> distanceList = new ArrayList();
 //            List<Double> doseList = new ArrayList();
             Trial trial = trialList.get(i);
-            String patientPath = rootpath+sep+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_4256"+
-                    sep+"Mount_0"+sep + "Patient_" + trial.getNumber();
+            String patientPath = rootpath+sep+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_"
+                    +trial.getInstitution()+sep+"Mount_0"+sep + "Patient_" + trial.getNumber();
             String planPath = patientPath + sep + trial.getPlanId();
             List<String> files = new ArrayList();
             try {
@@ -834,7 +834,7 @@ public class mainconnect implements ActionListener,ItemListener {
             double dose_Xstart = doseParams.XStart;
             double dose_Ystart = doseParams.YStart;
             double dose_Zstart = doseParams.ZStart;
-            int data_size = 0;
+
             HashMap<Double, HashSet<Point2D.Double>>[] Sets = new HashMap[rois.length];
             HashMap<Double, HashSet<Point2D.Double>> meanDoseRoi = new HashMap<>();
 //            int[] distribute = new int[100];
@@ -842,11 +842,10 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    Charset.forName("UTF-8"));
 //            CsvWriter cwd = new CsvWriter("C://Users/ME/Desktop/"+plan.getNumber()+"density.csv",',',
 //                    Charset.forName("UTF-8"));
-//            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"_"+plan.getId()+".csv",',',
-//                    Charset.forName("UTF-8"));
+//            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
+//            trial.getName()+".csv",',',Charset.forName("UTF-8"));
             CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
-                    trial.getName()+".csv",',',
-                    Charset.forName("UTF-8"));
+                    trial.getName()+".csv",',', Charset.forName("UTF-8"));
             String[] doseAxis = new String[2001];
             doseAxis[0]="Dose";
             for (int j = 1; j < doseAxis.length; j++) {
@@ -870,6 +869,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 e.printStackTrace();
             }
             {
+//                int data_size = 0;
                 int count = 0;
                 double sum = 0;
 //                System.out.println(doseParams.PrescriptionRoi+" "+doseParams.PrescriptionMethod+" "+doseParams.NormalizationMethod);
@@ -880,7 +880,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 Set<Map.Entry<Double, HashSet<Point2D.Double>>> entrySet = meanDoseRoi.entrySet();
                 for (Map.Entry<Double, HashSet<Point2D.Double>> entry : entrySet) {
                     double key = entry.getKey();
-                    data_size += meanDoseRoi.get(key).size();
+//                    data_size += meanDoseRoi.get(key).size();
                     Iterator<Point2D.Double> it = meanDoseRoi.get(key).iterator();
                     for (int k = 0; k < meanDoseRoi.get(key).size(); k++) {
                         math.geom2d.Point2D tmp = new math.geom2d.Point2D(it.next());
@@ -920,6 +920,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 double[] distribute = new double[2000];
                 List<Double> doseList = new ArrayList();
                 Sets[j] = readRoiSet("//  ROI: " + rois[j], planPath+sep+"plan.roi",ctParams);
+                int data_size = 0;
 //                HashMap<Double,ArrayList<Point2D.Double>> PTV = readRoi("//  ROI: " + rois[0],planPath+sep+"plan.roi");
 //                double[] DVHdata = DVH(Sets[j],dose_data,ctParams,doseParams);
 //                double[] OVHdata = OVH(Sets[j],PTV);
@@ -1023,12 +1024,26 @@ public class mainconnect implements ActionListener,ItemListener {
 
 //                    CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"_"+rois[j]+".csv",',',
 //                            Charset.forName("UTF-8"));
+                    //DVH微分
                     String[] tmp = new String[distribute.length+1];
                     tmp[0]=rois[j];
                     for (int k = 0; k < doseD.length; k++) {
                         distribute[(int) Math.round(doseD[k] / 5)]++;
                     }
                     for (int k = 0; k < distribute.length; k++) {
+                        tmp[k+1] = String.valueOf(distribute[k]);
+                    }
+                    cw.writeRecord(tmp);
+
+                    //DVH积分
+                    for (int k = 0; k < distribute.length; k++) {
+                        distribute[k] /=data_size;
+                    }
+                    for (int k = 1; k < distribute.length; k++) {
+                        distribute[k] += distribute[k-1];
+                    }
+                    for (int k = 0; k < distribute.length; k++) {
+                        distribute[k] = 1-distribute[k];
                         tmp[k+1] = String.valueOf(distribute[k]);
                     }
                     cw.writeRecord(tmp);
@@ -1069,8 +1084,8 @@ public class mainconnect implements ActionListener,ItemListener {
         HashMap<Double, HashSet<Point2D.Double>>[] Sets = new HashMap[ROInum];
         for (int i = 0; i < planList.size(); i++) {
             Plan plan = planList.get(i);
-            String patientPath = rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_4256"
-                    +sep+"Mount_0"+sep + "Patient_" + plan.getNumber();
+            String patientPath = rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_"
+                    +plan.getInstitution()+sep+"Mount_0"+sep + "Patient_" + plan.getNumber();
             CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"_"+plan.getId()+".csv",',',
                     Charset.forName("UTF-8"));
             String planPath = patientPath + sep+ plan.getId();
