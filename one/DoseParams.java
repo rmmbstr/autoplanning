@@ -20,6 +20,7 @@ public class DoseParams {
     float PrescriptionPercent, UnitsPerFraction, PrescriptionDose;
     int NumOfFraction;
     String PrescriptionRoi,PrescriptionMethod,NormalizationMethod;
+    List<String> PrescriptionList;
     int i = 0;
     public DoseParams() {
     }

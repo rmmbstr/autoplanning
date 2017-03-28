@@ -36,15 +36,15 @@ public class mainconnect implements ActionListener,ItemListener {
     JLabel passLabel = new JLabel("Password");
     JLabel dbLabel = new JLabel("Database");
     JLabel cmdLabel =new JLabel("Command");
-    JTextField addrText = new JTextField("192.168.1.121");
-//    JTextField addrText = new JTextField("170.16.1.140");
+//    JTextField addrText = new JTextField("192.168.1.121");
+    JTextField addrText = new JTextField("170.16.1.140");
     JTextField portText = new JTextField("5432");
-    JTextField unText = new JTextField("postgres");
-//    JTextField unText = new JTextField("lpuser");
-    JPasswordField passText = new JPasswordField("59623528");
-//    JPasswordField passText = new JPasswordField("launchpad");
+//    JTextField unText = new JTextField("postgres");
+    JTextField unText = new JTextField("lpuser");
+//    JPasswordField passText = new JPasswordField("59623528");
+    JPasswordField passText = new JPasswordField("launchpad");
     JTextField dbText = new JTextField("clinical");
-    JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 4256\n" +
+    JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 2883\n" +
             "ORDER BY medicalrecordnumber\n" +
             "ASC ",3,60);
     JTextArea queryArea = new JTextArea(10,60);
@@ -69,8 +69,8 @@ public class mainconnect implements ActionListener,ItemListener {
     List<TreePath> treePathList = new ArrayList();
 
     String sep = File.separator;
-    String rootpath = "F:\\";
-//    String rootpath = "/";
+//    String rootpath = "F:\\";
+    String rootpath = "/";
     public static void main(String[] args) {
         mainconnect connect = new mainconnect();
         connect.go();
@@ -553,7 +553,13 @@ public class mainconnect implements ActionListener,ItemListener {
             case 2: disConnectServer();break;
             case 3: queryDatabase();break;
             case 4: selectData();break;
-            case 5: Process(globalTrialList,Boxes);break;
+            case 5:
+                try {
+                    Process(globalTrialList, Boxes);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+                break;
 //            case 5:outputDVH(globalPlanList,Boxes);break;
 //            case "Process": drawDVH(globalPlanList.get(0));break;
             default: break;
@@ -734,7 +740,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //        }
     }
 
-    void Process(List<Trial> trialList, JComboBox[][] Boxes){
+    void Process(List<Trial> trialList, JComboBox[][] Boxes) {
 //        RList doseList = new RList();
 //        RList distanceList = new RList();
 
@@ -842,10 +848,10 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    Charset.forName("UTF-8"));
 //            CsvWriter cwd = new CsvWriter("C://Users/ME/Desktop/"+plan.getNumber()+"density.csv",',',
 //                    Charset.forName("UTF-8"));
-//            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
-//            trial.getName()+".csv",',',Charset.forName("UTF-8"));
-            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
-                    trial.getName()+".csv",',', Charset.forName("UTF-8"));
+            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
+            trial.getName()+".csv",',',Charset.forName("UTF-8"));
+//            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
+//                    trial.getName()+".csv",',', Charset.forName("UTF-8"));
             String[] doseAxis = new String[2001];
             doseAxis[0]="Dose";
             for (int j = 1; j < doseAxis.length; j++) {
@@ -869,7 +875,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 e.printStackTrace();
             }
             {
-//                int data_size = 0;
+                int data_size = 0;
                 int count = 0;
                 double sum = 0;
 //                System.out.println(doseParams.PrescriptionRoi+" "+doseParams.PrescriptionMethod+" "+doseParams.NormalizationMethod);
@@ -880,7 +886,8 @@ public class mainconnect implements ActionListener,ItemListener {
                 Set<Map.Entry<Double, HashSet<Point2D.Double>>> entrySet = meanDoseRoi.entrySet();
                 for (Map.Entry<Double, HashSet<Point2D.Double>> entry : entrySet) {
                     double key = entry.getKey();
-//                    data_size += meanDoseRoi.get(key).size();
+                    System.out.println(key);
+                    data_size += meanDoseRoi.get(key).size();
                     Iterator<Point2D.Double> it = meanDoseRoi.get(key).iterator();
                     for (int k = 0; k < meanDoseRoi.get(key).size(); k++) {
                         math.geom2d.Point2D tmp = new math.geom2d.Point2D(it.next());
@@ -910,11 +917,14 @@ public class mainconnect implements ActionListener,ItemListener {
                     }
                 }
                 meanDose = sum/count;
+                System.out.println(sum/data_size);
+                System.out.println(sum/count);
                 ratio = meanDose/(doseParams.PrescriptionDose*100d/doseParams.PrescriptionPercent
                         *doseParams.NumOfFraction);
+                System.out.println(sum/data_size/ratio);
+                System.out.println("meanDose="+meanDose/ratio);
             }
 
-            System.out.println("meanDose="+meanDose/ratio);
 
             for (int j = 0; j < Sets.length; j++) {
                 double[] distribute = new double[2000];
@@ -949,21 +959,29 @@ public class mainconnect implements ActionListener,ItemListener {
                                 / CT_STEP);
                         dose_z = (int) Math.ceil((CT_Zstart - dose_Zstart) / .4 - 1 + CT_STEPZ / .4 * (c[2] - CT_Zstart)
                                 / CT_STEPZ);
-                        for (int p = 0; p < 2; p++) {
-                            for (int l = 0; l < 2; l++) {
-                                for (int m = 0; m < 2; m++) {
-                                    inter[p * 4 + l * 2 + m][0] = dose_Xstart + 0.4 * (dose_x + p);
-                                    inter[p * 4 + l * 2 + m][1] = dose_Ystart + 0.4 * (dose_y + l);
-                                    inter[p * 4 + l * 2 + m][2] = dose_Zstart + 0.4 * (dose_z + m);
-                                    interdose[p * 4 + l * 2 + m] = dose_data[dose_z + m][dose_y + l][dose_x + p];
+                        try {
+                            for (int p = 0; p < 2; p++) {
+                                for (int l = 0; l < 2; l++) {
+                                    for (int m = 0; m < 2; m++) {
+                                        inter[p * 4 + l * 2 + m][0] = dose_Xstart + 0.4 * (dose_x + p);
+                                        inter[p * 4 + l * 2 + m][1] = dose_Ystart + 0.4 * (dose_y + l);
+                                        inter[p * 4 + l * 2 + m][2] = dose_Zstart + 0.4 * (dose_z + m);
+                                        interdose[p * 4 + l * 2 + m] = dose_data[dose_z + m][dose_y + l][dose_x + p];
+                                    }
                                 }
                             }
+                            double x0 = interpolate(inter, interdose, c) * doseParams.NumOfFraction *
+                                    doseParams.UnitsPerFraction / doseParams.PrescriptionPercent * 100;
+                            doseList.add(x0);
                         }
-                        double x0 = interpolate(inter, interdose, c) * doseParams.NumOfFraction *
-                                doseParams.UnitsPerFraction / doseParams.PrescriptionPercent * 100;
+                        catch (ArrayIndexOutOfBoundsException e){
+                            double x0 = 0;
+                            doseList.add(x0);
+                        }
+
 //                        double distance = -ptvPolygon.boundary().signedDistance(tmp);
                         double distance = 0;
-                        doseList.add(x0);
+
 //                        if (j==0) {
 //                            try {
 //                                if (x0 > 6200 && x0 < 6430) {
