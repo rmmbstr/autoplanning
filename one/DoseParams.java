@@ -5,19 +5,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-import static one.mainconnect.cloneObject;
-
 /**
  * Created by ME on 2016/4/9.
  */
 public class DoseParams {
-    int XDim, YDim, ZDim;
-    float VoxelSize;
-    float XStart, YStart, ZStart;
-    HashMap<String, List<Double>> DoseWeight;
-    float PrescriptionPercent, UnitsPerFraction, PrescriptionDose;
-    int NumOfFraction;
-    String PrescriptionRoi,PrescriptionMethod,NormalizationMethod;
+//    int XDim, YDim, ZDim;
+//    float VoxelSize;
+//    float XStart, YStart, ZStart;
+//    HashMap<String, List<Double>> DoseWeight;
+//    float PrescriptionPercent, UnitsPerFraction, PrescriptionDose;
+//    int NumOfFraction;
+//    String PrescriptionRoi,PrescriptionMethod,NormalizationMethod;
 
     List<TreatParams> treatParams = new ArrayList<>();
     public DoseParams() {
@@ -119,15 +117,18 @@ class Prescription{
         System.out.println();
     }
 }
-class TreatParams{
+class TreatParams {
     int XDim, YDim, ZDim;
     float VoxelSize;
     float XStart, YStart, ZStart;
-
+    String name;
     HashMap<String, List<Beam>> BeamMap = new HashMap<>();
     List<Prescription> PrescriptionList = new ArrayList<>();
+    public TreatParams(){}
     public TreatParams(BufferedReader PlanTrialPath){
         try {
+            this.name = DoseParams.readFile(PlanTrialPath,"  Name = ");
+            this.name = this.name.substring(1,this.name.length()-1);
             this.VoxelSize = Float.parseFloat(DoseParams.readFile(PlanTrialPath, "  DoseGrid .VoxelSize .X = "));
             this.XDim = Integer.parseInt(DoseParams.readFile(PlanTrialPath, "  DoseGrid .Dimension .X = "));
             this.YDim = Integer.parseInt(DoseParams.readFile(PlanTrialPath, "  DoseGrid .Dimension .Y = "));
@@ -174,14 +175,14 @@ class TreatParams{
                 Iterator<Beam> it = BeamMap.get(key).iterator();
                 for (int i = 0; i < BeamMap.get(key).size(); i++) {
                     sum += it.next().weight;
-                    System.out.println(BeamMap.get(key).get(i).binaryFileName);
+//                    System.out.println(BeamMap.get(key).get(i).binaryFileName);
                 }
                 for (int i = 0; i < BeamMap.get(key).size(); i++) {
                     BeamMap.get(key).get(i).weight /= sum;
                 }
             }
 
-            String pattern = "      Weight = ";
+//            String pattern = "      Weight = ";
 //            while ((s = PlanTrialPath.readLine()) != null){
 //                if (s.indexOf("  Name = ") == 0) {
 //                    float weightSum = 0;
