@@ -1,4 +1,5 @@
-package one; /**
+package one;
+/**
  * Created by ME on 2016/10/3.
  */
 import com.csvreader.CsvWriter;
@@ -27,53 +28,45 @@ import java.util.*;
 import java.util.List;
 
 public class mainconnect implements ActionListener,ItemListener {
-    JFrame frame = new JFrame("JDB");
-
-    JLabel addrLabel = new JLabel("Server Address");
-    JLabel portLabel = new JLabel("Server Port");
-    JLabel unLabel = new JLabel("Username");
-    JLabel passLabel = new JLabel("Password");
-    JLabel dbLabel = new JLabel("Database");
-    JLabel cmdLabel =new JLabel("Command");
-    JTextField addrText = new JTextField("192.168.1.121");
-//    JTextField addrText = new JTextField("170.16.1.140");
-    JTextField portText = new JTextField("5432");
-    JTextField unText = new JTextField("postgres");
-//    JTextField unText = new JTextField("lpuser");
-    JPasswordField passText = new JPasswordField("59623528");
-//    JPasswordField passText = new JPasswordField("launchpad");
-    JTextField dbText = new JTextField("clinical");
-    JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 4256\n" +
+    private JFrame frame = new JFrame("JDB");
+    private JLabel addrLabel = new JLabel("Server Address");
+    private JLabel portLabel = new JLabel("Server Port");
+    private JLabel unLabel = new JLabel("Username");
+    private JLabel passLabel = new JLabel("Password");
+    private JLabel dbLabel = new JLabel("Database");
+    private JLabel cmdLabel =new JLabel("Command");
+    private JTextField addrText = new JTextField("192.168.1.121");
+//    private JTextField addrText = new JTextField("170.16.1.140");
+    private JTextField portText = new JTextField("5432");
+    private JTextField unText = new JTextField("postgres");
+//    private JTextField unText = new JTextField("lpuser");
+    private JPasswordField passText = new JPasswordField("59623528");
+//    private JPasswordField passText = new JPasswordField("launchpad");
+    private JTextField dbText = new JTextField("clinical");
+    private JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 4256\n" +
             "ORDER BY medicalrecordnumber\n" +
             "ASC ",3,60);
-    JTextArea queryArea = new JTextArea(10,60);
-    JButton connButton = new JButton("Connect");
-    JButton queryButton = new JButton("Query");
-    JButton discButton = new JButton("Disconnect");
-    JButton slcButton = new JButton("Select");
-    JButton prcButton = new JButton("Process");
-    Connection c = null;
+    private JTextArea queryArea = new JTextArea(10,60);
+    private JButton connButton = new JButton("Connect");
+    private JButton queryButton = new JButton("Query");
+    private JButton discButton = new JButton("Disconnect");
+    private JButton slcButton = new JButton("Select");
+    private JButton prcButton = new JButton("Process");
+    private Connection c = null;
 
-    JCheckBox checkBox[] = null;
-    String result[][] = null;
-    String patientPath[] = null;
-    DefaultMutableTreeNode treeNode[] = null;
-    JTree tree[] = null;
+//    private JCheckBox checkBox[] = null;
+    private String result[][] = null;
+//    private String patientPath[] = null;
 
-    JComboBox ptvBox;
-    JComboBox bladderBox;
-    JComboBox rfBox;
-    JComboBox lfBox;
 
-    List<TreePath> treePathList = new ArrayList();
+    private List<TreePath> treePathList = new ArrayList<>();
 
-    String sep = File.separator;
-    String rootpath = "F:\\";
-//    String rootpath = "/";
+    private String sep = File.separator;
+    private String rootpath = "F:\\";
+//    private String rootpath = "/";
     public static void main(String[] args) {
         mainconnect connect = new mainconnect();
         connect.go();
-
 
 //        Connection c = null;
 //        Statement stmt = null;
@@ -102,7 +95,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //        }
 //        System.out.println("Opened database successfully");
     }
-    public  void go(){
+    private void go(){
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(new GridLayout(5,1));
         labelPanel.add(addrLabel);
@@ -156,13 +149,13 @@ public class mainconnect implements ActionListener,ItemListener {
         frame.add(northPanel,BorderLayout.NORTH);
         frame.add(midPanel,BorderLayout.CENTER);
         frame.add(southPanel,BorderLayout.SOUTH);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setLocation(160,180);
 //        frame.setSize(600,500);
         frame.pack();
         frame.setVisible(true);
     }
-    void connectServer(){
+    private void connectServer(){
 
 //        Statement stmt = null;
         try {
@@ -194,7 +187,7 @@ public class mainconnect implements ActionListener,ItemListener {
             System.exit(0);
         }
     }
-    void disConnectServer(){
+    private void disConnectServer(){
         try{
             c.close();
             System.out.println("Database Disconnected");
@@ -204,13 +197,17 @@ public class mainconnect implements ActionListener,ItemListener {
             System.err.println(e.getClass().getName()+": "+e.getMessage());
         }
     }
-    void queryDatabase(){
+    private void queryDatabase(){
+        DefaultMutableTreeNode treeNode[];
+        JTree tree[];
+        globalTrialList.clear();
+        treePathList.clear();
         JFrame dataFrame = new JFrame("data");
         Container container = dataFrame.getContentPane();
         JPanel dataPanel = new JPanel();
-        int rowNum = 0;
+        int rowNum;
         int i = 0;
-        Statement stmt = null;
+        Statement stmt;
         try {
             stmt = c.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
             ResultSet rs = stmt.executeQuery(cmdArea.getText());
@@ -221,8 +218,8 @@ public class mainconnect implements ActionListener,ItemListener {
             String column[] = {"medicalrecordnumber","patientid","firstname","lastname","middlename"
                     ,"institutionid","gender","patientpath"};
             result = new String[rowNum][colNum];
-            patientPath = new String[rowNum];
-            checkBox = new JCheckBox[rowNum];
+//            patientPath = new String[rowNum];
+//            JCheckBox[] checkBox = new JCheckBox[rowNum];
             treeNode = new DefaultMutableTreeNode[rowNum];
             tree = new JTree[rowNum];
 
@@ -245,7 +242,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 result[i][6] = gender;
                 result[i][7] = patientpath;
 
-                checkBox[i] = new JCheckBox(result[i][0]);
+//                checkBox[i] = new JCheckBox(result[i][0]);
                 treeNode[i] = new DefaultMutableTreeNode(result[i][0]);
                 tree[i] = new JTree(treeNode[i]);
                 treeNode[i].add(new DefaultMutableTreeNode("Plan_0"));
@@ -277,8 +274,11 @@ public class mainconnect implements ActionListener,ItemListener {
 
             dataPanel.setLayout(new GridLayout(rowNum+1,8));
 
-            for (int j = 0; j < column.length; j++) {
-                dataPanel.add(new JLabel(column[j]));
+//            for (int j = 0; j < column.length; j++) {
+//                dataPanel.add(new JLabel(column[j]));
+//            }
+            for (String s : column) {
+                dataPanel.add(new JLabel(s));
             }
             for (int j = 0; j < rowNum; j++) {
 //                dataPanel.add(checkBox[j]);
@@ -287,15 +287,14 @@ public class mainconnect implements ActionListener,ItemListener {
                     dataPanel.add(new JLabel(result[j][k]));
                 }
             }
-
-            Object data[][] = new Object[rowNum][8];
-            for (int j = 0; j < rowNum; j++) {
-//                data [j][0] = checkBox[j];
-
-                for (int k = 1; k < 8; k++) {
-                    data[j][k] = result[j][k];
-                }
-            }
+//            Object data[][] = new Object[rowNum][8];
+//            for (int j = 0; j < rowNum; j++) {
+////                data [j][0] = checkBox[j];
+//
+//                for (int k = 1; k < 8; k++) {
+//                    data[j][k] = result[j][k];
+//                }
+//            }
 //            TableColumnModel tcm = table.getColumnModel();
 //            tcm.getColumn(0).setCellEditor(new DefaultCellEditor(new JCheckBox()));
 
@@ -326,7 +325,7 @@ public class mainconnect implements ActionListener,ItemListener {
             for (int k = 0; k < files.length; k++) {
                 if (files[k].isDirectory()) {
                     if (files[k].getName().contains("Plan")) {
-                        List<Trial> trialList = new ArrayList();
+                        List<Trial> trialList = new ArrayList<>();
                         try {
                             String s;
                             BufferedReader file1 = new BufferedReader(new FileReader(files[k].getPath()
@@ -383,23 +382,27 @@ public class mainconnect implements ActionListener,ItemListener {
         frame.setVisible(true);
 
     }
-    List<Plan> globalPlanList = new ArrayList();
-    List<Trial> globalTrialList = new ArrayList();
-    JComboBox[][] Boxes;
+//    private List<Plan> globalPlanList = new ArrayList<>();
+    private List<Trial> globalTrialList = new ArrayList<>();
+    private JComboBox[][] Boxes;
 
-    void selectData(){
-        List<Trial> trialList = new ArrayList();
-        List<Plan> planList = new ArrayList();
+    private void selectData(){
+        List<Trial> trialList = new ArrayList<>();
+//        List<Plan> planList = new ArrayList<>();
 
-        for (int i = 0; i < treePathList.size(); i++) {
+//        for (int i = 0; i < treePathList.size(); i++) {
+        for (TreePath t : treePathList) {
 //            System.out.println(treePathList.get(i));
-            TreePath treePath = treePathList.get(i);
-            Object tmp = treePath.getLastPathComponent();
+//            TreePath treePath = treePathList.get(i);
+            Object tmp = t.getLastPathComponent();
             if (tmp instanceof Patient) {
-                List<Plan> tmpList = new ArrayList();
+                List<Plan> tmpList;
                 tmpList = ((Patient) tmp).getPlanList();
-                for (int j = 0; j < tmpList.size(); j++) {
-                    trialList.addAll(tmpList.get(j).getTrialList());
+//                for (int j = 0; j < tmpList.size(); j++) {
+//                    trialList.addAll(tmpList.get(j).getTrialList());
+//                }
+                for (Plan p : tmpList) {
+                    trialList.addAll(p.getTrialList());
                 }
 
             }
@@ -408,7 +411,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //                ((Patient) treePath.getPathComponent(1)).getMrn() + ((Plan) tmp).getId();
             }
             if (tmp instanceof Trial) {
-                trialList.add((Trial) treePath.getPathComponent(3));
+                trialList.add((Trial) t.getPathComponent(3));
 //                System.out.println(((Patient) treePath.getPathComponent(1)).getMrn() +
 //                        ((Plan) treePath.getPathComponent(2)).getId() + ((Trial) tmp).getName());
             }
@@ -434,7 +437,7 @@ public class mainconnect implements ActionListener,ItemListener {
 
 
         globalTrialList.addAll(trialList);
-        globalPlanList.addAll(planList);
+//        globalPlanList.addAll(planList);
         JFrame roiframe = new JFrame();
         JPanel mainPanel = new JPanel();
         roiframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -442,7 +445,7 @@ public class mainconnect implements ActionListener,ItemListener {
 
         Boxes = new JComboBox[trialList.size()][8];
         for (int i = 0; i < trialList.size(); i++) {
-            Vector<String> roiList = new Vector();
+            Vector<String> roiList = new Vector<>();
             Trial tmp = trialList.get(i);
             JPanel jPanel = new JPanel(new GridLayout(Boxes[0].length+1,2));
 //            roiframe.setLayout(new GridLayout(planList.size(),1));
@@ -574,7 +577,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //        }
     }
 
-    static void  readDoseData(String path, float[][][] dosedata, double weight) {
+    private static void  readDoseData(String path, float[][][] dosedata, double weight) {
         try {
             RandomAccessFile file1 = new RandomAccessFile(path, "r");
             file1.seek(0);
@@ -595,7 +598,7 @@ public class mainconnect implements ActionListener,ItemListener {
         String patientPath = rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_"
                 +plan.getInstitution() +sep+"Mount_0"+sep+ "Patient_" + plan.getNumber();
         String planPath = patientPath + sep + plan.getId();
-        List<String> files = new ArrayList();
+        List<String> files = new ArrayList<>();
         try {
             String s;
             BufferedReader file1 = new BufferedReader(new FileReader(planPath+sep+"plan.Trial"));
@@ -739,7 +742,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //        }
     }
 
-    void Process(List<Trial> trialList, JComboBox[][] Boxes) {
+    private void Process(List<Trial> trialList, JComboBox[][] Boxes) {
 //        RList doseList = new RList();
 //        RList distanceList = new RList();
 
@@ -774,6 +777,7 @@ public class mainconnect implements ActionListener,ItemListener {
             String[] rois = new String[Boxes[0].length];
             HashMap<Double, HashSet<Point2D.Double>> Sets[] = new HashMap[rois.length];
             float[][][] dose_data = new float[treatParams.ZDim][treatParams.YDim][treatParams.XDim];
+            double totalmean = 0;
             for (int j = 0; j < treatParams.PrescriptionList.size(); j++) {
                 Prescription pre = treatParams.PrescriptionList.get(j);
                 String pName = pre.name;
@@ -864,10 +868,11 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    System.out.println(count);
                     ratio = meanDose/(pre.pDose*100d/pre.pPercent*pre.pFractions);
 //                    System.out.println(sum/data_size/ratio);
-                    System.out.println("meanDose="+meanDose/ratio);
+                    totalmean += meanDose/ratio;
+//                    System.out.println("meanDose="+meanDose/ratio);
                     for (int l = 0; l < dose_data_tmp.length; l++) {
-                        for (int m = 0; m < dose_data_tmp[l].length; m++) {
-                            for (int k = 0; k < dose_data_tmp[l][m].length; k++) {
+                        for (int m = 0; m < dose_data_tmp[0].length; m++) {
+                            for (int k = 0; k < dose_data_tmp[0][0].length; k++) {
                                 dose_data[l][m][k] += dose_data_tmp[l][m][k]* pre.pFractions *
                                         pre.MUpFraction / pre.pPercent * 100/ratio;
                             }
@@ -875,6 +880,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     }
                 }
             }
+            System.out.println(totalmean);
 //            try {
 //                String trialName = "  Name = \""+trial.getName()+"\";";
 //                String s;
@@ -985,7 +991,7 @@ public class mainconnect implements ActionListener,ItemListener {
 
 
 
-            for (int j = 0; j < Sets.length; j++) {
+            for (int j = 0; j < 0; j++) {
                 double[] distribute = new double[2000];
                 List<Double> doseList = new ArrayList<>();
                 Sets[j] = readRoiSet("//  ROI: " + rois[j], planPath+sep+"plan.roi",ctParams);
@@ -1157,7 +1163,7 @@ public class mainconnect implements ActionListener,ItemListener {
 
     }
 
-    void outputDVH(List<Plan> planList,JComboBox[][] Boxes){
+    private void outputDVH(List<Plan> planList,JComboBox[][] Boxes){
         int ROInum = 4;
         HashMap<Double, HashSet<Point2D.Double>>[] Sets = new HashMap[ROInum];
         for (int i = 0; i < planList.size(); i++) {
@@ -1167,7 +1173,7 @@ public class mainconnect implements ActionListener,ItemListener {
             CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"_"+plan.getId()+".csv",',',
                     Charset.forName("UTF-8"));
             String planPath = patientPath + sep+ plan.getId();
-            List<String> files = new ArrayList();
+            List<String> files = new ArrayList<>();
             try {
                 String s;
                 BufferedReader file1 = new BufferedReader(new FileReader(planPath+sep+"plan.Trial"));
@@ -1233,7 +1239,7 @@ public class mainconnect implements ActionListener,ItemListener {
 
     }
 
-    public static double[] DVH(HashMap<Double, HashSet<Point2D.Double>> ROIset, float[][][] dose_data, CTParams ctParams
+    private static double[] DVH(HashMap<Double, HashSet<Point2D.Double>> ROIset, float[][][] dose_data, CTParams ctParams
             , DoseParams doseParams){
         int[] distribute = new int[100];
         double[] c = new double[3];
@@ -1296,7 +1302,7 @@ public class mainconnect implements ActionListener,ItemListener {
         return integrated;
     }
 
-    public static double[] OVH(HashMap<Double, HashSet<Point2D.Double>> ROIset, HashMap<Double,
+    private static double[] OVH(HashMap<Double, HashSet<Point2D.Double>> ROIset, HashMap<Double,
             ArrayList<Point2D.Double>> PTV){
         int[] distribute = new int[100];
         double[] probability = new double[100];
@@ -1325,7 +1331,7 @@ public class mainconnect implements ActionListener,ItemListener {
         return probability;
     }
 
-    public static double interpolate(double [][] inter, double interdose[], double c[]){
+    private static double interpolate(double [][] inter, double interdose[], double c[]){
         double z0 = ((inter[1][2] - c[2]) * interdose[0] + (c[2] - inter[0][2]) * interdose[1]) / 0.4;
         double z1 = ((inter[3][2] - c[2]) * interdose[2] + (c[2] - inter[2][2]) * interdose[3]) / 0.4;
         double z2 = ((inter[5][2] - c[2]) * interdose[4] + (c[2] - inter[4][2]) * interdose[5]) / 0.4;
@@ -1336,10 +1342,10 @@ public class mainconnect implements ActionListener,ItemListener {
         return x0;
     }
 
-    public static HashMap<Double, HashSet<Point2D.Double>> readRoiSet(String roi,String FilePath,CTParams ctparam){
-        List<Point2D.Double> polygon = new ArrayList();
-        HashMap<Double, HashSet<Point2D.Double>> RoiSet = new HashMap();
-        HashSet<Point2D.Double> set = new HashSet();
+    private static HashMap<Double, HashSet<Point2D.Double>> readRoiSet(String roi,String FilePath,CTParams ctparam){
+        List<Point2D.Double> polygon = new ArrayList<>();
+        HashMap<Double, HashSet<Point2D.Double>> RoiSet = new HashMap<>();
+        HashSet<Point2D.Double> set = new HashSet<>();
 
         try {
             FileReader file = new FileReader(FilePath);
@@ -1415,7 +1421,7 @@ public class mainconnect implements ActionListener,ItemListener {
         return RoiSet;
     }
 
-    public static boolean checkWithJdkGeneralPath(Point2D.Double point, List<Point2D.Double> polygon) {
+    private static boolean checkWithJdkGeneralPath(Point2D.Double point, List<Point2D.Double> polygon) {
         java.awt.geom.GeneralPath p = new java.awt.geom.GeneralPath();
         Point2D.Double first = polygon.get(0);
         p.moveTo(first.x, first.y);
@@ -1427,7 +1433,7 @@ public class mainconnect implements ActionListener,ItemListener {
         return p.contains(point);
     }
 
-    public static Object cloneObject(Object obj) throws Exception{
+    private static Object cloneObject(Object obj) throws Exception{
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(byteOut);
         out.writeObject(obj);
@@ -1438,15 +1444,15 @@ public class mainconnect implements ActionListener,ItemListener {
         return in.readObject();
     }
 
-    public static HashMap<Double,ArrayList<Point2D.Double>> readRoi(String roi,String filepath){
+    private static HashMap<Double,ArrayList<Point2D.Double>> readRoi(String roi,String filepath){
         //List polygons = new ArrayList<ArrayList<math.geom2d.Point2D>>();
         try {
-            List polygon = new ArrayList<Point2D.Double>();
+            List<Point2D.Double> polygon = new ArrayList<>();
             FileReader file = new FileReader(filepath);
             BufferedReader breader = new BufferedReader(file);
             String s;
             //String pattern1 = roi;
-            HashMap<Double, ArrayList<Point2D.Double>> map = new HashMap();
+            HashMap<Double, ArrayList<Point2D.Double>> map = new HashMap<>();
             while ((s = breader.readLine()) != null) {
                 if (s.indexOf(roi) == 0) {
                     for (int i = 0; i < 7; i++) {
