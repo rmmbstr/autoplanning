@@ -35,15 +35,15 @@ public class mainconnect implements ActionListener,ItemListener {
     private JLabel passLabel = new JLabel("Password");
     private JLabel dbLabel = new JLabel("Database");
     private JLabel cmdLabel =new JLabel("Command");
-//    private JTextField addrText = new JTextField("192.168.1.121");
-    private JTextField addrText = new JTextField("170.16.1.140");
+    private JTextField addrText = new JTextField("192.168.1.121");
+//    private JTextField addrText = new JTextField("170.16.1.140");
     private JTextField portText = new JTextField("5432");
-//    private JTextField unText = new JTextField("postgres");
-    private JTextField unText = new JTextField("lpuser");
-//    private JPasswordField passText = new JPasswordField("59623528");
-    private JPasswordField passText = new JPasswordField("launchpad");
+    private JTextField unText = new JTextField("postgres");
+//    private JTextField unText = new JTextField("lpuser");
+    private JPasswordField passText = new JPasswordField("59623528");
+//    private JPasswordField passText = new JPasswordField("launchpad");
     private JTextField dbText = new JTextField("clinical");
-    private JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 2883\n" +
+    private JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 4256\n" +
             "ORDER BY medicalrecordnumber\n" +
             "ASC ",3,60);
     private JTextArea queryArea = new JTextArea(10,60);
@@ -62,8 +62,8 @@ public class mainconnect implements ActionListener,ItemListener {
     private List<TreePath> treePathList = new ArrayList<>();
 
     private String sep = File.separator;
-//    private String rootpath = "F:\\";
-    private String rootpath = "/";
+    private String rootpath = "F:\\";
+//    private String rootpath = "/";
     public static void main(String[] args) {
         mainconnect connect = new mainconnect();
         connect.go();
@@ -963,10 +963,10 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    Charset.forName("UTF-8"));
 //            CsvWriter cwd = new CsvWriter("C://Users/ME/Desktop/"+plan.getNumber()+"density.csv",',',
 //                    Charset.forName("UTF-8"));
-            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
-            trial.getName()+".csv",',',Charset.forName("UTF-8"));
-//            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
-//                    trial.getName()+".csv",',', Charset.forName("UTF-8"));
+//            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
+//              trial.getName()+".csv",',',Charset.forName("UTF-8"));
+            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
+                    trial.getName()+".csv",',', Charset.forName("UTF-8"));
             String[] doseAxis = new String[2001];
             doseAxis[0]="Dose";
             for (int j = 1; j < doseAxis.length; j++) {
@@ -1372,7 +1372,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 }
             }
             while ((s = breader.readLine()) != null){
-                if (s.indexOf(roi) == 0) {
+                if (s.equals(roi)) {
                     for (int i = 0; i < 7; i++) {
                         breader.readLine();
                     }
@@ -1454,7 +1454,7 @@ public class mainconnect implements ActionListener,ItemListener {
             //String pattern1 = roi;
             HashMap<Double, ArrayList<Point2D.Double>> map = new HashMap<>();
             while ((s = breader.readLine()) != null) {
-                if (s.indexOf(roi) == 0) {
+                if (s.equals(roi)) {
                     for (int i = 0; i < 7; i++) {
                         breader.readLine();
                     }
