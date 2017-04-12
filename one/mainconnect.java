@@ -35,15 +35,15 @@ public class mainconnect implements ActionListener,ItemListener {
     private JLabel passLabel = new JLabel("Password");
     private JLabel dbLabel = new JLabel("Database");
     private JLabel cmdLabel =new JLabel("Command");
-    private JTextField addrText = new JTextField("192.168.1.121");
-//    private JTextField addrText = new JTextField("170.16.1.140");
+//    private JTextField addrText = new JTextField("192.168.1.121");
+    private JTextField addrText = new JTextField("170.16.1.140");
     private JTextField portText = new JTextField("5432");
-    private JTextField unText = new JTextField("postgres");
-//    private JTextField unText = new JTextField("lpuser");
-    private JPasswordField passText = new JPasswordField("59623528");
-//    private JPasswordField passText = new JPasswordField("launchpad");
+//    private JTextField unText = new JTextField("postgres");
+    private JTextField unText = new JTextField("lpuser");
+//    private JPasswordField passText = new JPasswordField("59623528");
+    private JPasswordField passText = new JPasswordField("launchpad");
     private JTextField dbText = new JTextField("clinical");
-    private JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 4256\n" +
+    private JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 2883\n" +
             "ORDER BY medicalrecordnumber\n" +
             "ASC ",3,60);
     private JTextArea queryArea = new JTextArea(10,60);
@@ -53,7 +53,8 @@ public class mainconnect implements ActionListener,ItemListener {
     private JButton slcButton = new JButton("Select");
     private JButton prcButton = new JButton("Process");
     private Connection c = null;
-
+    //    private String rootpath = "F:\\";
+    private String rootpath = "/";
 //    private JCheckBox checkBox[] = null;
     private String result[][] = null;
 //    private String patientPath[] = null;
@@ -62,8 +63,7 @@ public class mainconnect implements ActionListener,ItemListener {
     private List<TreePath> treePathList = new ArrayList<>();
 
     private String sep = File.separator;
-    private String rootpath = "F:\\";
-//    private String rootpath = "/";
+
     public static void main(String[] args) {
         mainconnect connect = new mainconnect();
         connect.go();
@@ -316,9 +316,9 @@ public class mainconnect implements ActionListener,ItemListener {
             System.exit(0);
         }
 
-        List<Patient> patientList = new ArrayList<Patient>();
+        List<Patient> patientList = new ArrayList<>();
         for (int j = 0; j < result.length; j++) {
-            List<Plan> planList = new ArrayList<Plan>();
+            List<Plan> planList = new ArrayList<>();
             File dir = new File(rootpath+"pinnacle_patient_expansion"+sep+"NewPatients"+sep+"Institution_"
                     + result[j][5] + sep+"Mount_0"+sep+"Patient_" + result[j][1]+sep);
             File[] files = dir.listFiles();
@@ -333,11 +333,15 @@ public class mainconnect implements ActionListener,ItemListener {
                             while (!(s = DoseParams.readFile(file1,"  Name = ")).equals("-1")) {
                                 trialList.add(new Trial(s.substring(1,s.length()-1),result[j][1],result[j][0],
                                         files[k].getName(),result[j][5]));
-                                System.out.println(s.substring(1,s.length()-1));
+//                                System.out.println(s.substring(1,s.length()-1));
                             }
                         }
                         catch (Exception e){
-                            e.printStackTrace();
+//                            e.printStackTrace();
+//                            if (e instanceof FileNotFoundException)
+//                                System.out.println("MRN: "+result[j][0]+" Plan: "+files[k].getName()+" Trial Not Found");
+                            if (e instanceof IOException)
+                                System.out.println("MRN: "+result[j][0]+" Plan: "+files[k].getName()+" Trial Not Found");
                         }
                         planList.add(new Plan(files[k].getName(), trialList, result[j][1],result[j][0],result[j][5]));
                     }
@@ -392,6 +396,7 @@ public class mainconnect implements ActionListener,ItemListener {
 
 //        for (int i = 0; i < treePathList.size(); i++) {
         for (TreePath t : treePathList) {
+            System.out.println(t.getLastPathComponent());
 //            System.out.println(treePathList.get(i));
 //            TreePath treePath = treePathList.get(i);
             Object tmp = t.getLastPathComponent();
@@ -416,6 +421,21 @@ public class mainconnect implements ActionListener,ItemListener {
 //                        ((Plan) treePath.getPathComponent(2)).getId() + ((Trial) tmp).getName());
             }
         }
+
+//        HashSet<Trial> h = new HashSet<>(trialList);
+//        trialList.clear();
+//        trialList.addAll(h);
+
+        //去重
+        Set<Trial> set = new HashSet<>();
+        List<Trial> newList = new ArrayList<>();
+        for (Trial trial:trialList )
+        {
+            if (set.add(trial))
+                newList.add(trial);
+        }
+        trialList.clear();
+        trialList.addAll(newList);
 // planlist添加
 //       for (int i = 0; i < treePathList.size(); i++) {
 ////            System.out.println(treePathList.get(i));
@@ -963,10 +983,10 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    Charset.forName("UTF-8"));
 //            CsvWriter cwd = new CsvWriter("C://Users/ME/Desktop/"+plan.getNumber()+"density.csv",',',
 //                    Charset.forName("UTF-8"));
-//            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
-//              trial.getName()+".csv",',',Charset.forName("UTF-8"));
-            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
-                    trial.getName()+".csv",',', Charset.forName("UTF-8"));
+            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
+              trial.getName()+".csv",',',Charset.forName("UTF-8"));
+//            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
+//                    trial.getName()+".csv",',', Charset.forName("UTF-8"));
             String[] doseAxis = new String[2001];
             doseAxis[0]="Dose";
             for (int j = 1; j < doseAxis.length; j++) {
