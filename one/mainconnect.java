@@ -396,7 +396,7 @@ public class mainconnect implements ActionListener,ItemListener {
 
 //        for (int i = 0; i < treePathList.size(); i++) {
         for (TreePath t : treePathList) {
-            System.out.println(t.getLastPathComponent());
+//            System.out.println(t.getLastPathComponent());
 //            System.out.println(treePathList.get(i));
 //            TreePath treePath = treePathList.get(i);
             Object tmp = t.getLastPathComponent();
@@ -463,7 +463,7 @@ public class mainconnect implements ActionListener,ItemListener {
         roiframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Container container = roiframe.getContentPane();
 
-        Boxes = new JComboBox[trialList.size()][8];
+        Boxes = new JComboBox[trialList.size()][16];
         for (int i = 0; i < trialList.size(); i++) {
             Vector<String> roiList = new Vector<>();
             Trial tmp = trialList.get(i);
@@ -483,38 +483,13 @@ public class mainconnect implements ActionListener,ItemListener {
 //                JComboBox jComboBox = new JComboBox(roiList);
                 jPanel.add(new JLabel("Patient:"+tmp.getMrn()+sep+tmp.getPlanId()+sep+tmp.getName()));
                 jPanel.add(new JLabel());
-                jPanel.add(new JLabel("ROI1"));
-//                ptvBox = new JComboBox(roiList);
-                Boxes[i][0] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][0]);
-//                jPanel.add(new JLabel("CTV"));
-//                jPanel.add(new JComboBox(roiList));
-//                jPanel.add(new JLabel("BLADDER"));
-                jPanel.add(new JLabel("ROI2"));
-                Boxes[i][1] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][1]);
-//                jPanel.add(new JLabel("BODY"));
-//                jPanel.add(new JComboBox(roiList));
-//                jPanel.add(new JLabel("RIGHT FEMORAL"));
-                jPanel.add(new JLabel("ROI3"));
-                Boxes[i][2] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][2]);
-//                jPanel.add(new JLabel("LEFT FEMORAL"));
-                jPanel.add(new JLabel("ROI4"));
-                Boxes[i][3] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][3]);
-                jPanel.add(new JLabel("ROI5"));
-                Boxes[i][4] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][4]);
-                jPanel.add(new JLabel("ROI6"));
-                Boxes[i][5] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][5]);
-                jPanel.add(new JLabel("ROI7"));
-                Boxes[i][6] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][6]);
-                jPanel.add(new JLabel("ROI8"));
-                Boxes[i][7] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][7]);
+                String[] ROIS = {"ROI1","ROI2","ROI3","ROI4","ROI5","ROI6","ROI7","ROI8","ROI9","ROI10","ROI11",
+                        "ROI12","ROI13","ROI14","ROI15","ROI16"};
+                for (int j = 0; j < ROIS.length; j++) {
+                    jPanel.add(new JLabel(ROIS[j]));
+                    Boxes[i][j] = new JComboBox<>(roiList);
+                    jPanel.add(Boxes[i][j]);
+                }
                 mainPanel.add(jPanel);
 
             }
@@ -823,9 +798,9 @@ public class mainconnect implements ActionListener,ItemListener {
 //            System.out.println(filePath);
 
                     readDoseData(filePath, dose_data_tmp, treatParams.BeamMap.get(pName).get(k).weight);
-                    System.out.println(files.get(k)+"weight "+treatParams.BeamMap.get(pName).get(k).weight);
+//                    System.out.println(files.get(k)+"weight "+treatParams.BeamMap.get(pName).get(k).weight);
                 }
-                System.out.println("Dose input finish");
+//                System.out.println("Dose input finish");
 
                 //计算平均剂量
 
@@ -900,7 +875,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     }
                 }
             }
-            System.out.println(totalmean);
+//            System.out.println(totalmean);
 //            try {
 //                String trialName = "  Name = \""+trial.getName()+"\";";
 //                String s;
@@ -985,6 +960,8 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    Charset.forName("UTF-8"));
             CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
               trial.getName()+".csv",',',Charset.forName("UTF-8"));
+            System.out.println("Writing csv to "+"/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
+                    trial.getName()+".csv");
 //            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
 //                    trial.getName()+".csv",',', Charset.forName("UTF-8"));
             String[] doseAxis = new String[2001];
@@ -1083,7 +1060,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     }
                 }
 
-                System.out.println(trial.getMrn()+" "+rois[j]+" done!");
+                System.out.println(rois[j]+" done!");
                 double[] doseD = new double[doseList.size()];
                 double[] distanceD = new double[distanceList.size()];
 
@@ -1151,6 +1128,25 @@ public class mainconnect implements ActionListener,ItemListener {
                         tmp[k+1] = String.valueOf(distribute[k]);
                     }
                     cw.writeRecord(tmp);
+                    //max,min,mean
+                    String mmmdose[] = new String[6];
+                    mmmdose[0] = "mean dose";
+                    mmmdose[2] = "max dose";
+                    mmmdose[4] = "min dose";
+                    double sum = 0;
+                    double minimum = 10000;
+                    double maximum = 0;
+                    for (double temp:doseList){
+                        sum += temp;
+                        if (temp < minimum)
+                            minimum = temp;
+                        if (temp > maximum)
+                            maximum = temp;
+                    }
+                    mmmdose[1] = String.valueOf(sum/doseList.size());
+                    mmmdose[3] = String.valueOf(maximum);
+                    mmmdose[5] = String.valueOf(minimum);
+                    cw.writeRecord(mmmdose);
 //            c.eval("plot(dose,distance)");
 //            c.eval("save(dose,distance,file= '/home/p3rtp/ljy/save.RData')");
 //                rc.eval("save(dose,distance,file= 'C:/Users/ME/Desktop/"+plan.getNumber()+"dd.RData')");
