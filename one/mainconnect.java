@@ -5,6 +5,7 @@ package one;
 import com.csvreader.CsvWriter;
 import org.jdesktop.swingx.JXTreeTable;
 import org.rosuda.REngine.*;
+import org.rosuda.REngine.Rserve.RConnection;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
@@ -463,7 +464,7 @@ public class mainconnect implements ActionListener,ItemListener {
         roiframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Container container = roiframe.getContentPane();
 
-        Boxes = new JComboBox[trialList.size()][8];
+        Boxes = new JComboBox[trialList.size()][16];
         for (int i = 0; i < trialList.size(); i++) {
             Vector<String> roiList = new Vector<>();
             Trial tmp = trialList.get(i);
@@ -483,38 +484,45 @@ public class mainconnect implements ActionListener,ItemListener {
 //                JComboBox jComboBox = new JComboBox(roiList);
                 jPanel.add(new JLabel("Patient:"+tmp.getMrn()+sep+tmp.getPlanId()+sep+tmp.getName()));
                 jPanel.add(new JLabel());
-                jPanel.add(new JLabel("ROI1"));
-//                ptvBox = new JComboBox(roiList);
-                Boxes[i][0] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][0]);
-//                jPanel.add(new JLabel("CTV"));
-//                jPanel.add(new JComboBox(roiList));
-//                jPanel.add(new JLabel("BLADDER"));
-                jPanel.add(new JLabel("ROI2"));
-                Boxes[i][1] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][1]);
-//                jPanel.add(new JLabel("BODY"));
-//                jPanel.add(new JComboBox(roiList));
-//                jPanel.add(new JLabel("RIGHT FEMORAL"));
-                jPanel.add(new JLabel("ROI3"));
-                Boxes[i][2] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][2]);
-//                jPanel.add(new JLabel("LEFT FEMORAL"));
-                jPanel.add(new JLabel("ROI4"));
-                Boxes[i][3] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][3]);
-                jPanel.add(new JLabel("ROI5"));
-                Boxes[i][4] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][4]);
-                jPanel.add(new JLabel("ROI6"));
-                Boxes[i][5] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][5]);
-                jPanel.add(new JLabel("ROI7"));
-                Boxes[i][6] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][6]);
-                jPanel.add(new JLabel("ROI8"));
-                Boxes[i][7] = new JComboBox<>(roiList);
-                jPanel.add(Boxes[i][7]);
+                String[] ROIS = {"ROI1","ROI2","ROI3","ROI4","ROI5","ROI6","ROI7","ROI8","ROI9","ROI10","ROI11",
+                        "ROI12","ROI13","ROI14","ROI15","ROI16",};
+                for (int j = 0; j < ROIS.length; j++) {
+                    jPanel.add(new JLabel(ROIS[j]));
+                    Boxes[i][j] = new JComboBox<>(roiList);
+                    jPanel.add(Boxes[i][j]);
+                }
+//                jPanel.add(new JLabel("ROI1"));
+////                ptvBox = new JComboBox(roiList);
+//                Boxes[i][0] = new JComboBox<>(roiList);
+//                jPanel.add(Boxes[i][0]);
+////                jPanel.add(new JLabel("CTV"));
+////                jPanel.add(new JComboBox(roiList));
+////                jPanel.add(new JLabel("BLADDER"));
+//                jPanel.add(new JLabel("ROI2"));
+//                Boxes[i][1] = new JComboBox<>(roiList);
+//                jPanel.add(Boxes[i][1]);
+////                jPanel.add(new JLabel("BODY"));
+////                jPanel.add(new JComboBox(roiList));
+////                jPanel.add(new JLabel("RIGHT FEMORAL"));
+//                jPanel.add(new JLabel("ROI3"));
+//                Boxes[i][2] = new JComboBox<>(roiList);
+//                jPanel.add(Boxes[i][2]);
+////                jPanel.add(new JLabel("LEFT FEMORAL"));
+//                jPanel.add(new JLabel("ROI4"));
+//                Boxes[i][3] = new JComboBox<>(roiList);
+//                jPanel.add(Boxes[i][3]);
+//                jPanel.add(new JLabel("ROI5"));
+//                Boxes[i][4] = new JComboBox<>(roiList);
+//                jPanel.add(Boxes[i][4]);
+//                jPanel.add(new JLabel("ROI6"));
+//                Boxes[i][5] = new JComboBox<>(roiList);
+//                jPanel.add(Boxes[i][5]);
+//                jPanel.add(new JLabel("ROI7"));
+//                Boxes[i][6] = new JComboBox<>(roiList);
+//                jPanel.add(Boxes[i][6]);
+//                jPanel.add(new JLabel("ROI8"));
+//                Boxes[i][7] = new JComboBox<>(roiList);
+//                jPanel.add(Boxes[i][7]);
                 mainPanel.add(jPanel);
 
             }
@@ -766,7 +774,8 @@ public class mainconnect implements ActionListener,ItemListener {
 //        RList doseList = new RList();
 //        RList distanceList = new RList();
 
-
+        List<List<Double>> fullDisList = new ArrayList<>();
+        List<List<Double>> fullDoseList = new ArrayList<>();
         for (int i = 0; i < trialList.size(); i++) {
             List<Double> distanceList = new ArrayList<>();
 //            List<Double> doseList = new ArrayList();
@@ -983,8 +992,8 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    Charset.forName("UTF-8"));
 //            CsvWriter cwd = new CsvWriter("C://Users/ME/Desktop/"+plan.getNumber()+"density.csv",',',
 //                    Charset.forName("UTF-8"));
-            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
-              trial.getName()+".csv",',',Charset.forName("UTF-8"));
+//            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
+//              trial.getName()+".csv",',',Charset.forName("UTF-8"));
 //            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
 //                    trial.getName()+".csv",',', Charset.forName("UTF-8"));
             String[] doseAxis = new String[2001];
@@ -993,7 +1002,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 doseAxis[j]= String.valueOf(j*5-5);
             }
             try {
-                cw.writeRecord(doseAxis);
+//                cw.writeRecord(doseAxis);
             }
             catch (Exception e){
                 e.printStackTrace();
@@ -1010,13 +1019,13 @@ public class mainconnect implements ActionListener,ItemListener {
 //            }
 
 
-
+            HashMap<Double,ArrayList<Point2D.Double>> PTV = readRoi("//  ROI: " + rois[0],planPath+sep+"plan.roi");
             for (int j = 0; j < Sets.length; j++) {
                 double[] distribute = new double[2000];
                 List<Double> doseList = new ArrayList<>();
                 Sets[j] = readRoiSet("//  ROI: " + rois[j], planPath+sep+"plan.roi",ctParams);
                 int data_size = 0;
-//                HashMap<Double,ArrayList<Point2D.Double>> PTV = readRoi("//  ROI: " + rois[0],planPath+sep+"plan.roi");
+
 //                double[] DVHdata = DVH(Sets[j],dose_data,ctParams,doseParams);
 //                double[] OVHdata = OVH(Sets[j],PTV);
                 Set <Map.Entry<Double, HashSet<Point2D.Double>>> entrySet = Sets[j].entrySet();
@@ -1032,7 +1041,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    catch (Exception e){
 //                        e.printStackTrace();
 //                    }
-//                    MyPolygon2D ptvPolygon = new MyPolygon2D(PTV.get(key));
+                    MyPolygon2D ptvPolygon = new MyPolygon2D(PTV.get(key));
                     for (int k = 0; k < Sets[j].get(key).size(); k++) {
                         math.geom2d.Point2D tmp = new math.geom2d.Point2D(it.next());
                         c[0] = tmp.getX();
@@ -1065,8 +1074,8 @@ public class mainconnect implements ActionListener,ItemListener {
                             doseList.add(x0);
                         }
 
-//                        double distance = -ptvPolygon.boundary().signedDistance(tmp);
-                        double distance = 0;
+                        double distance = -ptvPolygon.boundary().signedDistance(tmp);
+//                        double distance = 0;
 
 //                        if (j==0) {
 //                            try {
@@ -1113,10 +1122,10 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    for (int k = 0; k < doseD.length; k++) {
 //                        doseD[k]=doseD[k]/ratio;
 //                    }
-//                    RConnection rc = new RConnection("170.16.253.120");
+                    RConnection rc = new RConnection("170.16.253.120");
 //                    RConnection rc = new RConnection("127.0.0.1");
-//                    rc.assign("dose", doseVector);
-//                    rc.assign("distance", distanceVector);
+                    rc.assign("dose", doseVector);
+                    rc.assign("distance", distanceVector);
 
 //            String[] tmp = new String[distribute.length];
 //            for (int k = 0; k < tmp.length; k++) {
@@ -1131,13 +1140,13 @@ public class mainconnect implements ActionListener,ItemListener {
                     //DVH微分
                     String[] tmp = new String[distribute.length+1];
                     tmp[0]=rois[j];
-                    for (int k = 0; k < doseD.length; k++) {
-                        distribute[(int) Math.round(doseD[k] / 5)]++;
+                    for (double k:doseD) {
+                        distribute[(int) Math.round(k / 5)]++;
                     }
                     for (int k = 0; k < distribute.length; k++) {
                         tmp[k+1] = String.valueOf(distribute[k]);
                     }
-                    cw.writeRecord(tmp);
+//                    cw.writeRecord(tmp);
 
                     //DVH积分
                     for (int k = 0; k < distribute.length; k++) {
@@ -1150,7 +1159,7 @@ public class mainconnect implements ActionListener,ItemListener {
                         distribute[k] = 1-distribute[k];
                         tmp[k+1] = String.valueOf(distribute[k]);
                     }
-                    cw.writeRecord(tmp);
+//                    cw.writeRecord(tmp);
 //            c.eval("plot(dose,distance)");
 //            c.eval("save(dose,distance,file= '/home/p3rtp/ljy/save.RData')");
 //                rc.eval("save(dose,distance,file= 'C:/Users/ME/Desktop/"+plan.getNumber()+"dd.RData')");
@@ -1172,7 +1181,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     e.printStackTrace();
                 }
             }
-            cw.close();
+//            cw.close();
 //            pr.close();
         }
 //        for (int k = 0; k < distribute.length; k++) {
