@@ -36,7 +36,7 @@ public class mainconnect implements ActionListener,ItemListener {
     private JLabel passLabel = new JLabel("Password");
     private JLabel dbLabel = new JLabel("Database");
     private JLabel cmdLabel =new JLabel("Command");
-//    private JTextField addrText = new JTextField("192.168.1.121");
+//    private JTextField addrText = new JTextField("127.0.0.1");
     private JTextField addrText = new JTextField("170.16.1.140");
     private JTextField portText = new JTextField("5432");
 //    private JTextField unText = new JTextField("postgres");
@@ -54,7 +54,7 @@ public class mainconnect implements ActionListener,ItemListener {
     private JButton slcButton = new JButton("Select");
     private JButton prcButton = new JButton("Process");
     private Connection c = null;
-    //    private String rootpath = "F:\\";
+//        private String rootpath = "F:\\";
     private String rootpath = "/";
 //    private JCheckBox checkBox[] = null;
     private String result[][] = null;
@@ -397,7 +397,7 @@ public class mainconnect implements ActionListener,ItemListener {
 
 //        for (int i = 0; i < treePathList.size(); i++) {
         for (TreePath t : treePathList) {
-            System.out.println(t.getLastPathComponent());
+//            System.out.println(t.getLastPathComponent());
 //            System.out.println(treePathList.get(i));
 //            TreePath treePath = treePathList.get(i);
             Object tmp = t.getLastPathComponent();
@@ -464,7 +464,7 @@ public class mainconnect implements ActionListener,ItemListener {
         roiframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Container container = roiframe.getContentPane();
 
-        Boxes = new JComboBox[trialList.size()][16];
+        Boxes = new JComboBox[trialList.size()][5];
         for (int i = 0; i < trialList.size(); i++) {
             Vector<String> roiList = new Vector<>();
             Trial tmp = trialList.get(i);
@@ -484,8 +484,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //                JComboBox jComboBox = new JComboBox(roiList);
                 jPanel.add(new JLabel("Patient:"+tmp.getMrn()+sep+tmp.getPlanId()+sep+tmp.getName()));
                 jPanel.add(new JLabel());
-                String[] ROIS = {"ROI1","ROI2","ROI3","ROI4","ROI5","ROI6","ROI7","ROI8","ROI9","ROI10","ROI11",
-                        "ROI12","ROI13","ROI14","ROI15","ROI16",};
+                String[] ROIS = {"PTV","ROI2","ROI3","ROI4","ROI5"};
                 for (int j = 0; j < ROIS.length; j++) {
                     jPanel.add(new JLabel(ROIS[j]));
                     Boxes[i][j] = new JComboBox<>(roiList);
@@ -774,8 +773,8 @@ public class mainconnect implements ActionListener,ItemListener {
 //        RList doseList = new RList();
 //        RList distanceList = new RList();
 
-        List<List<Double>> fullDisList = new ArrayList<>();
-        List<List<Double>> fullDoseList = new ArrayList<>();
+        List<Double> fullDisList = new ArrayList<>();
+        List<Double> fullDoseList = new ArrayList<>();
         for (int i = 0; i < trialList.size(); i++) {
             List<Double> distanceList = new ArrayList<>();
 //            List<Double> doseList = new ArrayList();
@@ -834,7 +833,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     readDoseData(filePath, dose_data_tmp, treatParams.BeamMap.get(pName).get(k).weight);
                     System.out.println(files.get(k)+"weight "+treatParams.BeamMap.get(pName).get(k).weight);
                 }
-                System.out.println("Dose input finish");
+//                System.out.println("Dose input finish");
 
                 //计算平均剂量
 
@@ -1001,12 +1000,12 @@ public class mainconnect implements ActionListener,ItemListener {
             for (int j = 1; j < doseAxis.length; j++) {
                 doseAxis[j]= String.valueOf(j*5-5);
             }
-            try {
-//                cw.writeRecord(doseAxis);
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
+//            try {
+////                cw.writeRecord(doseAxis);
+//            }
+//            catch (Exception e){
+//                e.printStackTrace();
+//            }
 
 //            FileOutputStream fs = null;
 //            PrintStream pr = null;
@@ -1020,7 +1019,7 @@ public class mainconnect implements ActionListener,ItemListener {
 
 
             HashMap<Double,ArrayList<Point2D.Double>> PTV = readRoi("//  ROI: " + rois[0],planPath+sep+"plan.roi");
-            for (int j = 0; j < Sets.length; j++) {
+            for (int j = Sets.length-1; j < Sets.length; j++) {
                 double[] distribute = new double[2000];
                 List<Double> doseList = new ArrayList<>();
                 Sets[j] = readRoiSet("//  ROI: " + rois[j], planPath+sep+"plan.roi",ctParams);
@@ -1041,7 +1040,16 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    catch (Exception e){
 //                        e.printStackTrace();
 //                    }
-                    MyPolygon2D ptvPolygon = new MyPolygon2D(PTV.get(key));
+                    System.out.println(key);
+                    Set <Map.Entry<Double, ArrayList<Point2D.Double>>> entries = PTV.entrySet();
+                    double diff = 100;
+                    double fkey = 0;
+                    for (Map.Entry<Double, ArrayList<Point2D.Double>> entry1:entries){
+                        double key1 = entry1.getKey();
+                        if (Math.abs(key - key1)<diff)
+                            fkey = key1;
+                    }
+                    MyPolygon2D ptvPolygon = new MyPolygon2D(PTV.get(fkey));
                     for (int k = 0; k < Sets[j].get(key).size(); k++) {
                         math.geom2d.Point2D tmp = new math.geom2d.Point2D(it.next());
                         c[0] = tmp.getX();
@@ -1075,6 +1083,7 @@ public class mainconnect implements ActionListener,ItemListener {
                         }
 
                         double distance = -ptvPolygon.boundary().signedDistance(tmp);
+                        distance = Math.sqrt(distance*distance+(key-fkey)*(key-fkey));
 //                        double distance = 0;
 
 //                        if (j==0) {
@@ -1091,8 +1100,9 @@ public class mainconnect implements ActionListener,ItemListener {
 //                        distribute[(int) Math.round(x0 / 5)]++;
                     }
                 }
-
-                System.out.println(trial.getMrn()+" "+rois[j]+" done!");
+                fullDisList.addAll(distanceList);
+                fullDoseList.addAll(doseList);
+                System.out.println(rois[j]+" done!");
                 double[] doseD = new double[doseList.size()];
                 double[] distanceD = new double[distanceList.size()];
 
@@ -1102,8 +1112,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 for (int i1 = 0; i1 < distanceList.size(); i1++) {
                     distanceD[i1] = distanceList.get(i1);
                 }
-                REXPDouble doseVector = new REXPDouble(doseD);
-                REXPDouble distanceVector = new REXPDouble(distanceD);
+
 
 //                if (j==0){
 //                    double sum = 0;
@@ -1122,10 +1131,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    for (int k = 0; k < doseD.length; k++) {
 //                        doseD[k]=doseD[k]/ratio;
 //                    }
-                    RConnection rc = new RConnection("170.16.253.120");
-//                    RConnection rc = new RConnection("127.0.0.1");
-                    rc.assign("dose", doseVector);
-                    rc.assign("distance", distanceVector);
+
 
 //            String[] tmp = new String[distribute.length];
 //            for (int k = 0; k < tmp.length; k++) {
@@ -1183,6 +1189,32 @@ public class mainconnect implements ActionListener,ItemListener {
             }
 //            cw.close();
 //            pr.close();
+        }
+
+        double[] fullDoseArray = new double[fullDoseList.size()];
+        double[] fullDisArray = new double[fullDisList.size()];
+        for (int i = 0; i < fullDisList.size(); i++) {
+            fullDoseArray[i] = fullDoseList.get(i);
+            fullDisArray[i] = fullDisList.get(i);
+        }
+        try {
+            REXPDouble doseVector = new REXPDouble(fullDoseArray);
+            REXPDouble distanceVector = new REXPDouble(fullDisArray);
+            System.out.println(fullDoseArray.length+" "+fullDisArray.length);
+            RConnection rc = new RConnection("170.16.253.120");
+//            RConnection rc = new RConnection("127.0.0.1");
+            rc.eval("library(hdrcde)");
+            rc.assign("dose", fullDoseArray);
+            rc.eval("saveRDS(dose,\"/home/dose.RDS\")");
+            rc.assign("distance", fullDisArray);
+            rc.eval("saveRDS(distance,\"/home/dis.RDS\")");
+            rc.eval("out<-cde(x = distance, y = dose, x.margin = seq(-3,7,0.1),y.margin = seq(0, 6000, 50), x.name = \"distance\", y.name = \"dose\", nxmargin = 100, nymargin = 100)");
+//            rc.eval("out<-cde(distance, dose, nxmargin=100,nymargin=100,y.margin =seq(0,6000,100),x.name = 'distance',y.name = 'dose')");
+            rc.eval("saveRDS(out,\"/home/kde.RDS\")");
+            rc.close();
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
 //        for (int k = 0; k < distribute.length; k++) {
 //            distribute[k]=distribute[k]/data_size;
@@ -1469,7 +1501,6 @@ public class mainconnect implements ActionListener,ItemListener {
 
         ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
         ObjectInputStream in =new ObjectInputStream(byteIn);
-
         return in.readObject();
     }
 
