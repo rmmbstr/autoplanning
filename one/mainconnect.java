@@ -1070,8 +1070,8 @@ public class mainconnect implements ActionListener,ItemListener {
                 for (int i1 = 0; i1 < distanceList.size(); i1++) {
                     distanceD[i1] = distanceList.get(i1);
                 }
-                REXPDouble doseVector = new REXPDouble(doseD);
-                REXPDouble distanceVector = new REXPDouble(distanceD);
+//                REXPDouble doseVector = new REXPDouble(doseD);
+//                REXPDouble distanceVector = new REXPDouble(distanceD);
 
 //                if (j==0){
 //                    double sum = 0;
@@ -1106,14 +1106,17 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"_"+rois[j]+".csv",',',
 //                            Charset.forName("UTF-8"));
                     //DVH微分
+                    double size = 0;
                     String[] tmp = new String[distribute.length+1];
                     tmp[0]=rois[j];
                     for (int k = 0; k < doseD.length; k++) {
                         distribute[(int) Math.round(doseD[k] / 5)]++;
                     }
                     for (int k = 0; k < distribute.length; k++) {
+                        size += distribute[k];
                         tmp[k+1] = String.valueOf(distribute[k]);
                     }
+                    size = size * CT_STEP * CT_STEP * CT_STEPZ;
                     cw.writeRecord(tmp);
 
                     //DVH积分
@@ -1133,6 +1136,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     mmmdose[0] = "mean dose";
                     mmmdose[2] = "max dose";
                     mmmdose[4] = "min dose";
+                    mmmdose[6] = "size";
                     double sum = 0;
                     double minimum = 10000;
                     double maximum = 0;
@@ -1146,6 +1150,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     mmmdose[1] = String.valueOf(sum/doseList.size());
                     mmmdose[3] = String.valueOf(maximum);
                     mmmdose[5] = String.valueOf(minimum);
+                    mmmdose[7] = String.valueOf(size);
                     cw.writeRecord(mmmdose);
 //            c.eval("plot(dose,distance)");
 //            c.eval("save(dose,distance,file= '/home/p3rtp/ljy/save.RData')");
