@@ -1132,7 +1132,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     }
                     cw.writeRecord(tmp);
                     //max,min,mean
-                    String mmmdose[] = new String[6];
+                    String mmmdose[] = new String[8];
                     mmmdose[0] = "mean dose";
                     mmmdose[2] = "max dose";
                     mmmdose[4] = "min dose";
