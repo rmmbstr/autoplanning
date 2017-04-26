@@ -773,8 +773,10 @@ public class mainconnect implements ActionListener,ItemListener {
 //        RList doseList = new RList();
 //        RList distanceList = new RList();
 
-        List<Double> fullDisList = new ArrayList<>();
-        List<Double> fullDoseList = new ArrayList<>();
+        List<Double> noPtvDisList = new ArrayList<>();
+        List<Double> havePtvDisList = new ArrayList<>();
+        List<Double> noPtvDoseList = new ArrayList<>();
+        List<Double> havePtvDoseList = new ArrayList<>();
         for (int i = 0; i < trialList.size(); i++) {
             List<Double> distanceList = new ArrayList<>();
 //            List<Double> doseList = new ArrayList();
@@ -995,11 +997,11 @@ public class mainconnect implements ActionListener,ItemListener {
 //              trial.getName()+".csv",',',Charset.forName("UTF-8"));
 //            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
 //                    trial.getName()+".csv",',', Charset.forName("UTF-8"));
-            String[] doseAxis = new String[2001];
-            doseAxis[0]="Dose";
-            for (int j = 1; j < doseAxis.length; j++) {
-                doseAxis[j]= String.valueOf(j*5-5);
-            }
+//            String[] doseAxis = new String[2001];
+//            doseAxis[0]="Dose";
+//            for (int j = 1; j < doseAxis.length; j++) {
+//                doseAxis[j]= String.valueOf(j*5-5);
+//            }
 //            try {
 ////                cw.writeRecord(doseAxis);
 //            }
@@ -1020,7 +1022,7 @@ public class mainconnect implements ActionListener,ItemListener {
 
             HashMap<Double,ArrayList<Point2D.Double>> PTV = readRoi("//  ROI: " + rois[0],planPath+sep+"plan.roi");
             for (int j = Sets.length-1; j < Sets.length; j++) {
-                double[] distribute = new double[2000];
+//                double[] distribute = new double[2000];
                 List<Double> doseList = new ArrayList<>();
                 Sets[j] = readRoiSet("//  ROI: " + rois[j], planPath+sep+"plan.roi",ctParams);
                 int data_size = 0;
@@ -1040,7 +1042,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    catch (Exception e){
 //                        e.printStackTrace();
 //                    }
-                    System.out.println(key);
+//                    System.out.println(key);
                     Set <Map.Entry<Double, ArrayList<Point2D.Double>>> entries = PTV.entrySet();
                     double diff = 100;
                     double fkey = 0;
@@ -1051,6 +1053,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     }
                     MyPolygon2D ptvPolygon = new MyPolygon2D(PTV.get(fkey));
                     for (int k = 0; k < Sets[j].get(key).size(); k++) {
+                        double x0;
                         math.geom2d.Point2D tmp = new math.geom2d.Point2D(it.next());
                         c[0] = tmp.getX();
                         c[1] = tmp.getY();
@@ -1074,18 +1077,24 @@ public class mainconnect implements ActionListener,ItemListener {
                             }
 //                            double x0 = interpolate(inter, interdose, c) * doseParams.NumOfFraction *
 //                                    doseParams.UnitsPerFraction / doseParams.PrescriptionPercent * 100;
-                            double x0 = interpolate(inter, interdose, c);
-                            doseList.add(x0);
+                            x0 = interpolate(inter, interdose, c);
                         }
                         catch (ArrayIndexOutOfBoundsException e){
-                            double x0 = 0;
-                            doseList.add(x0);
+                            x0 = 0;
                         }
 
                         double distance = -ptvPolygon.boundary().signedDistance(tmp);
                         distance = Math.sqrt(distance*distance+(key-fkey)*(key-fkey));
 //                        double distance = 0;
 
+                        if (Math.abs(key-fkey)<0.1){
+                            havePtvDoseList.add(x0);
+                            havePtvDisList.add(distance);
+                        }
+                        else {
+                            noPtvDoseList.add(x0);
+                            noPtvDisList.add(distance);
+                        }
 //                        if (j==0) {
 //                            try {
 //                                if (x0 > 6200 && x0 < 6430) {
@@ -1100,18 +1109,18 @@ public class mainconnect implements ActionListener,ItemListener {
 //                        distribute[(int) Math.round(x0 / 5)]++;
                     }
                 }
-                fullDisList.addAll(distanceList);
-                fullDoseList.addAll(doseList);
+//                fullDisList.addAll(distanceList);
+//                fullDoseList.addAll(doseList);
                 System.out.println(rois[j]+" done!");
-                double[] doseD = new double[doseList.size()];
-                double[] distanceD = new double[distanceList.size()];
-
-                for (int i1 = 0; i1 < doseList.size(); i1++) {
-                    doseD[i1] = doseList.get(i1);
-                }
-                for (int i1 = 0; i1 < distanceList.size(); i1++) {
-                    distanceD[i1] = distanceList.get(i1);
-                }
+//                double[] doseD = new double[doseList.size()];
+//                double[] distanceD = new double[distanceList.size()];
+//
+//                for (int i1 = 0; i1 < doseList.size(); i1++) {
+//                    doseD[i1] = doseList.get(i1);
+//                }
+//                for (int i1 = 0; i1 < distanceList.size(); i1++) {
+//                    distanceD[i1] = distanceList.get(i1);
+//                }
 
 
 //                if (j==0){
@@ -1123,7 +1132,7 @@ public class mainconnect implements ActionListener,ItemListener {
 ////                    System.out.println("meandose="+meanDose);
 //                }
 
-                try {
+//                try {
 //                    double ratio = meanDose/(doseParams.PrescriptionDose*100d/doseParams.PrescriptionPercent
 //                            *doseParams.NumOfFraction);
 //                    System.out.println("ratio="+ratio);
@@ -1144,27 +1153,27 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"_"+rois[j]+".csv",',',
 //                            Charset.forName("UTF-8"));
                     //DVH微分
-                    String[] tmp = new String[distribute.length+1];
-                    tmp[0]=rois[j];
-                    for (double k:doseD) {
-                        distribute[(int) Math.round(k / 5)]++;
-                    }
-                    for (int k = 0; k < distribute.length; k++) {
-                        tmp[k+1] = String.valueOf(distribute[k]);
-                    }
+//                    String[] tmp = new String[distribute.length+1];
+//                    tmp[0]=rois[j];
+//                    for (double k:doseD) {
+//                        distribute[(int) Math.round(k / 5)]++;
+//                    }
+//                    for (int k = 0; k < distribute.length; k++) {
+//                        tmp[k+1] = String.valueOf(distribute[k]);
+//                    }
 //                    cw.writeRecord(tmp);
 
                     //DVH积分
-                    for (int k = 0; k < distribute.length; k++) {
-                        distribute[k] /=data_size;
-                    }
-                    for (int k = 1; k < distribute.length; k++) {
-                        distribute[k] += distribute[k-1];
-                    }
-                    for (int k = 0; k < distribute.length; k++) {
-                        distribute[k] = 1-distribute[k];
-                        tmp[k+1] = String.valueOf(distribute[k]);
-                    }
+//                    for (int k = 0; k < distribute.length; k++) {
+//                        distribute[k] /=data_size;
+//                    }
+//                    for (int k = 1; k < distribute.length; k++) {
+//                        distribute[k] += distribute[k-1];
+//                    }
+//                    for (int k = 0; k < distribute.length; k++) {
+//                        distribute[k] = 1-distribute[k];
+//                        tmp[k+1] = String.valueOf(distribute[k]);
+//                    }
 //                    cw.writeRecord(tmp);
 //            c.eval("plot(dose,distance)");
 //            c.eval("save(dose,distance,file= '/home/p3rtp/ljy/save.RData')");
@@ -1182,40 +1191,51 @@ public class mainconnect implements ActionListener,ItemListener {
 //            c.eval("lm1=lm(dose~distance)");
 //            c.eval("abline(lm1)");
 //            c.eval("summary(lm1)");
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                }
+//                }
+//                catch (Exception e){
+//                    e.printStackTrace();
+//                }
             }
 //            cw.close();
 //            pr.close();
         }
 
-        double[] fullDoseArray = new double[fullDoseList.size()];
-        double[] fullDisArray = new double[fullDisList.size()];
-        for (int i = 0; i < fullDisList.size(); i++) {
-            fullDoseArray[i] = fullDoseList.get(i);
-            fullDisArray[i] = fullDisList.get(i);
+        double[] noPtvDoseArray = new double[noPtvDoseList.size()];
+        double[] havePtvDoseArray = new double[havePtvDoseList.size()];
+        double[] noPtvDisArray = new double[noPtvDisList.size()];
+        double[] havePtvDisArray = new double[havePtvDisList.size()];
+        for (int i = 0; i < noPtvDisList.size(); i++) {
+            noPtvDoseArray[i] = noPtvDoseList.get(i);
+            noPtvDisArray[i] = noPtvDisList.get(i);
+        }
+        for (int i = 0; i < havePtvDisList.size(); i++) {
+            havePtvDoseArray[i] = havePtvDoseList.get(i);
+            havePtvDisArray[i] = havePtvDisList.get(i);
         }
         try {
-            REXPDouble doseVector = new REXPDouble(fullDoseArray);
-            REXPDouble distanceVector = new REXPDouble(fullDisArray);
-            System.out.println(fullDoseArray.length+" "+fullDisArray.length);
+//            REXPDouble doseVector = new REXPDouble(fullDoseArray);
+//            REXPDouble distanceVector = new REXPDouble(fullDisArray);
+//            System.out.println(fullDoseArray.length+" "+fullDisArray.length);
             RConnection rc = new RConnection("170.16.253.120");
 //            RConnection rc = new RConnection("127.0.0.1");
-            rc.eval("library(hdrcde)");
-            rc.assign("dose", fullDoseArray);
-            rc.eval("saveRDS(dose,\"/home/dose.RDS\")");
-            rc.assign("distance", fullDisArray);
-            rc.eval("saveRDS(distance,\"/home/dis.RDS\")");
-            rc.eval("out<-cde(x = distance, y = dose, x.margin = seq(-3,7,0.1),y.margin = seq(0, 6000, 50), x.name = \"distance\", y.name = \"dose\", nxmargin = 100, nymargin = 100)");
+//            rc.eval("library(hdrcde)");
+            rc.assign("haveptvdose", havePtvDoseArray);
+            rc.eval("saveRDS(haveptvdose,\"/home/haveptvdose.RDS\")");
+            rc.assign("haveptvdistance", havePtvDisArray);
+            rc.eval("saveRDS(haveptvdistance,\"/home/haveptvdistance.RDS\")");
+            rc.assign("noptvdose", noPtvDoseArray);
+            rc.eval("saveRDS(noptvdose,\"/home/noptvdose.RDS\")");
+            rc.assign("noptvdistance", noPtvDisArray);
+            rc.eval("saveRDS(noptvdistance,\"/home/noptvdistance.RDS\")");
+//            rc.eval("out<-cde(x = distance, y = dose, x.margin = seq(-3,7,0.1),y.margin = seq(0, 6000, 50), x.name = \"distance\", y.name = \"dose\", nxmargin = 100, nymargin = 100)");
 //            rc.eval("out<-cde(distance, dose, nxmargin=100,nymargin=100,y.margin =seq(0,6000,100),x.name = 'distance',y.name = 'dose')");
-            rc.eval("saveRDS(out,\"/home/kde.RDS\")");
+//            rc.eval("saveRDS(out,\"/home/kde.RDS\")");
             rc.close();
         }
         catch (Exception e){
             e.printStackTrace();
         }
+        System.out.println("Finished");
 //        for (int k = 0; k < distribute.length; k++) {
 //            distribute[k]=distribute[k]/data_size;
 //        }
