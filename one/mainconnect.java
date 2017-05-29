@@ -785,85 +785,24 @@ public class mainconnect implements ActionListener,ItemListener {
             List<String> files = new ArrayList<>();
             CTParams ctParams = new CTParams(patientPath+sep+"ImageSet_0.header");
             DoseParams doseParams = new DoseParams(planPath+sep+"plan.Trial");
-            TreatParams treatParams = new TreatParams();
-            for (int j = 0; j < doseParams.treatParams.size(); j++) {
-                if (trial.getName().equals(doseParams.treatParams.get(j).name))
-                    treatParams = doseParams.treatParams.get(j);
-            }
-            double[] c = new double[3];
-            int dose_x,dose_y,dose_z;
-            double[][] inter = new double[8][3];
-            double[] interdose = new double[8];
-            double CT_Xstart = ctParams.CTXstart;
-            double CT_Ystart = ctParams.CTYstart;
-            double CT_Zstart = ctParams.CTZstart;
-            double CT_STEP = ctParams.CTstep;
-            double CT_STEPZ = ctParams.CTstepZ;
-            double dose_Xstart = treatParams.XStart;
-            double dose_Ystart = treatParams.YStart;
-            double dose_Zstart = treatParams.ZStart;
             String[] rois = new String[Boxes[0].length];
             HashMap<Double, HashSet<Point2D.Double>> Sets[] = new HashMap[rois.length];
-            float[][][] dose_data = new float[treatParams.ZDim][treatParams.YDim][treatParams.XDim];
-            double totalmean = 0;
-            for (int j = 0; j < treatParams.PrescriptionList.size(); j++) {
-                Prescription pre = treatParams.PrescriptionList.get(j);
-                String pName = pre.name;
-                for (int k = 0; k < treatParams.BeamMap.get(pName).size(); k++) {
-                    files.add(treatParams.BeamMap.get(pName).get(k).binaryFileName);
-                }
-
-                float[][][] dose_data_tmp = new float[treatParams.ZDim][treatParams.YDim][treatParams.XDim];
-                for (int l = 0; l < dose_data_tmp.length; l++) {
-                    for (int m = 0; m < dose_data_tmp[l].length; m++) {
-                        for (int k = 0; k < dose_data_tmp[l][m].length; k++) {
-                            dose_data_tmp[l][m][k] = 0f;
-                        }
-                    }
-                }
-//                String[] rois = new String[Boxes[0].length];
-                for (int k = 0; k < rois.length; k++) {
-                    rois[k] = (String) Boxes[i][k].getSelectedItem();
-                }
-                for (int k = 0; k < treatParams.BeamMap.get(pName).size(); k++) {
-                    String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d",
-                            Integer.parseInt(treatParams.BeamMap.get(pName).get(k).binaryFileName));
-//            System.out.println(filePath);
-
-                    readDoseData(filePath, dose_data_tmp, treatParams.BeamMap.get(pName).get(k).weight);
-                    System.out.println(files.get(k)+"weight "+treatParams.BeamMap.get(pName).get(k).weight);
-                }
-//                System.out.println("Dose input finish");
-
-                //计算平均剂量
-
-                HashMap<Double, HashSet<Point2D.Double>> meanDoseRoi;
+            for (int k = 0; k < rois.length; k++) {
+                rois[k] = (String) Boxes[i][k].getSelectedItem();
             }
-
 
             HashMap<Double,ArrayList<Point2D.Double>> PTV = readRoi("//  ROI: " + rois[0],planPath+sep+"plan.roi");
             for (int j = Sets.length-1; j < Sets.length; j++) {
 //                double[] distribute = new double[2000];
-                List<Double> doseList = new ArrayList<>();
                 Sets[j] = readRoiSet("//  ROI: " + rois[j], planPath+sep+"plan.roi",ctParams);
                 int data_size = 0;
 
-//                double[] DVHdata = DVH(Sets[j],dose_data,ctParams,doseParams);
-//                double[] OVHdata = OVH(Sets[j],PTV);
                 Set <Map.Entry<Double, HashSet<Point2D.Double>>> entrySet = Sets[j].entrySet();
                 for(Map.Entry<Double, HashSet<Point2D.Double>> entry: entrySet){
                     double key = entry.getKey();
                     data_size += Sets[j].get(key).size();
 //                    System.out.println(key);
                     Iterator<Point2D.Double> it = Sets[j].get(key).iterator();
-//                    try {
-//                        System.out.println(PTV.size());
-//                        System.out.println(key);
-//                    }
-//                    catch (Exception e){
-//                        e.printStackTrace();
-//                    }
-//                    System.out.println(key);
                     Set <Map.Entry<Double, ArrayList<Point2D.Double>>> entries = PTV.entrySet();
                     double diff = 100;
                     double fkey = 0;
@@ -885,106 +824,12 @@ public class mainconnect implements ActionListener,ItemListener {
                         else {
                             noPtvDisList.add(distance);
                         }
-//                        if (j==0) {
-//                            try {
-//                                if (x0 > 6200 && x0 < 6430) {
-//                                    pr.println(tmp.getX() + " " + tmp.getY() + " " + key);
-//                                }
-//                            }
-//                            catch (Exception e){
-//                                e.printStackTrace();
-//                            }
-//                        }
                         distanceList.add(distance);
 //                        distribute[(int) Math.round(x0 / 5)]++;
                     }
                 }
-//                fullDisList.addAll(distanceList);
-//                fullDoseList.addAll(doseList);
                 System.out.println(rois[j]+" done!");
-//                double[] doseD = new double[doseList.size()];
-//                double[] distanceD = new double[distanceList.size()];
-//
-//                for (int i1 = 0; i1 < doseList.size(); i1++) {
-//                    doseD[i1] = doseList.get(i1);
-//                }
-//                for (int i1 = 0; i1 < distanceList.size(); i1++) {
-//                    distanceD[i1] = distanceList.get(i1);
-//                }
 
-
-//                if (j==0){
-//                    double sum = 0;
-//                    for (int k = 0; k < doseD.length; k++) {
-//                        sum += doseD[k];
-//                    }
-//                    meanDose = sum/doseD.length;
-////                    System.out.println("meandose="+meanDose);
-//                }
-
-//                try {
-//                    double ratio = meanDose/(doseParams.PrescriptionDose*100d/doseParams.PrescriptionPercent
-//                            *doseParams.NumOfFraction);
-//                    System.out.println("ratio="+ratio);
-//                    System.out.println("meandose="+meanDose/ratio);
-//                    for (int k = 0; k < doseD.length; k++) {
-//                        doseD[k]=doseD[k]/ratio;
-//                    }
-
-
-//            String[] tmp = new String[distribute.length];
-//            for (int k = 0; k < tmp.length; k++) {
-//                tmp[k] = String.valueOf(distribute[k]);
-//            }
-//            cwd.writeRecord(tmp);
-//            cwd.close();
-
-
-//                    CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+plan.getNumber()+"_"+rois[j]+".csv",',',
-//                            Charset.forName("UTF-8"));
-                    //DVH微分
-//                    String[] tmp = new String[distribute.length+1];
-//                    tmp[0]=rois[j];
-//                    for (double k:doseD) {
-//                        distribute[(int) Math.round(k / 5)]++;
-//                    }
-//                    for (int k = 0; k < distribute.length; k++) {
-//                        tmp[k+1] = String.valueOf(distribute[k]);
-//                    }
-//                    cw.writeRecord(tmp);
-
-                    //DVH积分
-//                    for (int k = 0; k < distribute.length; k++) {
-//                        distribute[k] /=data_size;
-//                    }
-//                    for (int k = 1; k < distribute.length; k++) {
-//                        distribute[k] += distribute[k-1];
-//                    }
-//                    for (int k = 0; k < distribute.length; k++) {
-//                        distribute[k] = 1-distribute[k];
-//                        tmp[k+1] = String.valueOf(distribute[k]);
-//                    }
-//                    cw.writeRecord(tmp);
-//            c.eval("plot(dose,distance)");
-//            c.eval("save(dose,distance,file= '/home/p3rtp/ljy/save.RData')");
-//                rc.eval("save(dose,distance,file= 'C:/Users/ME/Desktop/"+plan.getNumber()+"dd.RData')");
-//            rc.eval("save(dose,distance,file= '/home/test/"+plan.getNumber()+rois[j]+"dd.RData')");
-//            rc.eval("save(dose,distance,file= 'C:/Users/ME/Desktop/ddbladder"+planList.get(0).getNumber()+".RData')");
-////                    rc.eval("save(dose,distance,file= 'C:/Users/ME/Desktop/dd"+plan.getNumber()+".RData')");
-////                   System.out.println("data saved!");
-//                    rc.eval("write.csv(dose,'C:/Users/ME/Desktop/dose.csv')");
-//            c.eval("source('/home/p3rtp/ljy/Rscript/DVH.R')");
-//                    rc.eval("write.csv(dose,'"+plan.getNumber()+rois[j]+"dose.csv')");
-
-//            System.out.println(rois[j]+" done!");
-//            c.eval("write.csv(distance,\"C:/Users/ME/Desktop/distance.csv\")");
-//            c.eval("lm1=lm(dose~distance)");
-//            c.eval("abline(lm1)");
-//            c.eval("summary(lm1)");
-//                }
-//                catch (Exception e){
-//                    e.printStackTrace();
-//                }
             }
 //            cw.close();
 //            pr.close();
