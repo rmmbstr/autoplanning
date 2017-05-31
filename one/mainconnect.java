@@ -1124,10 +1124,10 @@ public class mainconnect implements ActionListener,ItemListener {
                         distribute[k] /=data_size;
                     }
                     for (int k = 1; k < distribute.length; k++) {
-                        distribute[k] += distribute[k-1];
+                        distribute[distribute.length-1-k] += distribute[distribute.length-k];
                     }
                     for (int k = 0; k < distribute.length; k++) {
-                        distribute[k] = 1-distribute[k];
+//                        distribute[k] = 1-distribute[k];
                         tmp[k+1] = String.valueOf(distribute[k]);
                     }
                     cw.writeRecord(tmp);
