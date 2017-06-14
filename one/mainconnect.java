@@ -808,13 +808,16 @@ public class mainconnect implements ActionListener,ItemListener {
                     double fkey = 0;
                     for (Map.Entry<Double, ArrayList<Point2D.Double>> entry1:entries){
                         double key1 = entry1.getKey();
-                        if (Math.abs(key - key1)<diff)
+                        if (Math.abs(key - key1)<diff) {
+                            diff = Math.abs(key-key1);
                             fkey = key1;
+                        }
                     }
                     MyPolygon2D ptvPolygon = new MyPolygon2D(PTV.get(fkey));
                     for (int k = 0; k < Sets[j].get(key).size(); k++) {
                         math.geom2d.Point2D tmp = new math.geom2d.Point2D(it.next());
                         double distance = -ptvPolygon.boundary().signedDistance(tmp);
+                        if(!(distance < 0 && (Math.abs(key-fkey) < 0.1)))
                         distance = Math.sqrt(distance*distance+(key-fkey)*(key-fkey));
 //                        double distance = 0;
 
