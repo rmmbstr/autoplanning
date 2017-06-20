@@ -773,11 +773,15 @@ public class mainconnect implements ActionListener,ItemListener {
 //        RList doseList = new RList();
 //        RList distanceList = new RList();
 
-        List<Double> noPtvDisList = new ArrayList<>();
-        List<Double> havePtvDisList = new ArrayList<>();
-        List<Double> noPtvDoseList = new ArrayList<>();
-        List<Double> havePtvDoseList = new ArrayList<>();
+        List<Double> finalnoPtvDisList = new ArrayList<>();
+        List<Double> finalhavePtvDisList = new ArrayList<>();
+        List<Double> finalnoPtvDoseList = new ArrayList<>();
+        List<Double> finalhavePtvDoseList = new ArrayList<>();
         for (int i = 0; i < trialList.size(); i++) {
+            List<Double> noPtvDisList = new ArrayList<>();
+            List<Double> havePtvDisList = new ArrayList<>();
+            List<Double> noPtvDoseList = new ArrayList<>();
+            List<Double> havePtvDoseList = new ArrayList<>();
             List<Double> distanceList = new ArrayList<>();
 //            List<Double> doseList = new ArrayList();
             Trial trial = trialList.get(i);
@@ -1114,6 +1118,33 @@ public class mainconnect implements ActionListener,ItemListener {
 //                        distribute[(int) Math.round(x0 / 5)]++;
                     }
                 }
+
+                if (havePtvDisList.size() > 10000) {
+                    for (int k = 0; k < 10000; k++) {
+                        Random random = new Random();
+                        int id = random.nextInt(havePtvDisList.size());
+                        finalhavePtvDisList.add(havePtvDisList.get(id));
+                        finalhavePtvDoseList.add(havePtvDoseList.get(id));
+                    }
+                }
+                else {
+                    finalhavePtvDisList.addAll(havePtvDisList);
+                    finalhavePtvDoseList.addAll(havePtvDoseList);
+                }
+                if (noPtvDisList.size() > 10000) {
+                    for (int k = 0; k < 10000; k++) {
+                        Random random = new Random();
+                        int id = random.nextInt(noPtvDisList.size());
+                        finalnoPtvDisList.add(noPtvDisList.get(id));
+                        finalnoPtvDoseList.add(noPtvDoseList.get(id));
+                    }
+                }
+                else {
+                    finalnoPtvDisList.addAll(noPtvDisList);
+                    finalnoPtvDoseList.addAll(noPtvDoseList);
+                }
+
+
 //                fullDisList.addAll(distanceList);
 //                fullDoseList.addAll(doseList);
                 System.out.println(rois[j]+" done!");
@@ -1205,17 +1236,17 @@ public class mainconnect implements ActionListener,ItemListener {
 //            pr.close();
         }
 
-        double[] noPtvDoseArray = new double[noPtvDoseList.size()];
-        double[] havePtvDoseArray = new double[havePtvDoseList.size()];
-        double[] noPtvDisArray = new double[noPtvDisList.size()];
-        double[] havePtvDisArray = new double[havePtvDisList.size()];
-        for (int i = 0; i < noPtvDisList.size(); i++) {
-            noPtvDoseArray[i] = noPtvDoseList.get(i);
-            noPtvDisArray[i] = noPtvDisList.get(i);
+        double[] noPtvDoseArray = new double[finalnoPtvDoseList.size()];
+        double[] havePtvDoseArray = new double[finalhavePtvDoseList.size()];
+        double[] noPtvDisArray = new double[finalnoPtvDisList.size()];
+        double[] havePtvDisArray = new double[finalhavePtvDisList.size()];
+        for (int i = 0; i < finalnoPtvDisList.size(); i++) {
+            noPtvDoseArray[i] = finalnoPtvDoseList.get(i);
+            noPtvDisArray[i] = finalnoPtvDisList.get(i);
         }
-        for (int i = 0; i < havePtvDisList.size(); i++) {
-            havePtvDoseArray[i] = havePtvDoseList.get(i);
-            havePtvDisArray[i] = havePtvDisList.get(i);
+        for (int i = 0; i < finalhavePtvDisList.size(); i++) {
+            havePtvDoseArray[i] = finalhavePtvDoseList.get(i);
+            havePtvDisArray[i] = finalhavePtvDisList.get(i);
         }
         try {
 //            REXPDouble doseVector = new REXPDouble(fullDoseArray);
@@ -1249,6 +1280,57 @@ public class mainconnect implements ActionListener,ItemListener {
 
     }
 
+    private int[] generateRandomArray(int max,int number){
+        int[] index;
+        if (max>number) {
+            index = new int[number];
+            if (max > (number * 2)) {
+                Random random = new Random();
+                int count = 0;
+                while (count < number) {
+                    int num = random.nextInt(max);
+                    boolean flag = true;
+                    for (int l : index) {
+                        if (num == l) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        index[count] = num;
+                        count++;
+                    }
+                }
+
+            }
+            else {
+                Random random = new Random();
+                int count = 0;
+                while (count < (max-number)) {
+                    int num = random.nextInt(max);
+                    boolean flag = true;
+                    for (int l : index) {
+                        if (num == l) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        index[count] = num;
+                        count++;
+                    }
+                }
+
+            }
+        }
+        else {
+            index = new int[max];
+            for (int i = 0; i < index.length; i++) {
+                index[i] = i;
+            }
+        }
+        return index;
+    }
     private void outputDVH(List<Plan> planList,JComboBox[][] Boxes){
         int ROInum = 4;
         HashMap<Double, HashSet<Point2D.Double>>[] Sets = new HashMap[ROInum];
