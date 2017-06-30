@@ -1280,6 +1280,39 @@ public class mainconnect implements ActionListener,ItemListener {
 
     }
 
+    private void Process0(List<Trial> trialList, JComboBox[][] Boxes) {
+//        RList doseList = new RList();
+//        RList distanceList = new RList();
+
+        for (int i = 0; i < trialList.size(); i++) {
+
+//            List<Double> doseList = new ArrayList();
+            Trial trial = trialList.get(i);
+            String patientPath = rootpath + sep + "pinnacle_patient_expansion" + sep + "NewPatients" + sep + "Institution_"
+                    + trial.getInstitution() + sep + "Mount_0" + sep + "Patient_" + trial.getNumber();
+            String planPath = patientPath + sep + trial.getPlanId();
+            List<String> files = new ArrayList<>();
+            DoseParams doseParams = new DoseParams(planPath + sep + "plan.Trial");
+            TreatParams treatParams = new TreatParams();
+            for (int j = 0; j < doseParams.treatParams.size(); j++) {
+                if (trial.getName().equals(doseParams.treatParams.get(j).name))
+                    treatParams = doseParams.treatParams.get(j);
+            }
+
+
+            for (int j = 0; j < treatParams.PrescriptionList.size(); j++) {
+                Prescription pre = treatParams.PrescriptionList.get(j);
+                String pName = pre.name;
+                for (int k = 0; k < treatParams.BeamMap.get(pName).size(); k++) {
+                    files.add(treatParams.BeamMap.get(pName).get(k).binaryFileName);
+                }
+                System.out.println(trial.getMrn()+"  Prescription="+pre.pDose*pre.pFractions);
+            }
+            System.out.println();
+
+        }
+
+    }
     private int[] generateRandomArray(int max,int number){
         int[] index;
         if (max>number) {
