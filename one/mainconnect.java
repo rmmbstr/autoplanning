@@ -463,7 +463,7 @@ public class mainconnect implements ActionListener,ItemListener {
         roiframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Container container = roiframe.getContentPane();
 
-        Boxes = new JComboBox[trialList.size()][16];
+        Boxes = new JComboBox[trialList.size()][1];
         for (int i = 0; i < trialList.size(); i++) {
             Vector<String> roiList = new Vector<>();
             Trial tmp = trialList.get(i);
@@ -483,8 +483,9 @@ public class mainconnect implements ActionListener,ItemListener {
 //                JComboBox jComboBox = new JComboBox(roiList);
                 jPanel.add(new JLabel("Patient:"+tmp.getMrn()+sep+tmp.getPlanId()+sep+tmp.getName()));
                 jPanel.add(new JLabel());
-                String[] ROIS = {"ROI1","ROI2","ROI3","ROI4","ROI5","ROI6","ROI7","ROI8","ROI9","ROI10","ROI11",
-                        "ROI12","ROI13","ROI14","ROI15","ROI16"};
+//                String[] ROIS = {"ROI1","ROI2","ROI3","ROI4","ROI5","ROI6","ROI7","ROI8","ROI9","ROI10","ROI11",
+//                        "ROI12","ROI13","ROI14","ROI15","ROI16"};
+                String[] ROIS = {"ESO"};
                 for (int j = 0; j < ROIS.length; j++) {
                     jPanel.add(new JLabel(ROIS[j]));
                     Boxes[i][j] = new JComboBox<>(roiList);
@@ -958,8 +959,8 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    Charset.forName("UTF-8"));
 //            CsvWriter cwd = new CsvWriter("C://Users/ME/Desktop/"+plan.getNumber()+"density.csv",',',
 //                    Charset.forName("UTF-8"));
-            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
-              trial.getName()+".csv",',',Charset.forName("UTF-8"));
+//            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
+//              trial.getName()+".csv",',',Charset.forName("UTF-8"));
             System.out.println("Writing csv to "+"/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
                     trial.getName()+".csv");
 //            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
@@ -970,7 +971,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 doseAxis[j]= String.valueOf(j*5-5);
             }
             try {
-                cw.writeRecord(doseAxis);
+//                cw.writeRecord(doseAxis);
             }
             catch (Exception e){
                 e.printStackTrace();
@@ -997,6 +998,12 @@ public class mainconnect implements ActionListener,ItemListener {
 //                double[] DVHdata = DVH(Sets[j],dose_data,ctParams,doseParams);
 //                double[] OVHdata = OVH(Sets[j],PTV);
                 Set <Map.Entry<Double, HashSet<Point2D.Double>>> entrySet = Sets[j].entrySet();
+                List<Double> z_location[][] = new List[4][9];//P,dose
+                for (int k = 0; k < z_location.length; k++) {
+                    for (int l = 0; l < 9; l++) {
+                        z_location[k][l] = new ArrayList<>();
+                    }
+                }
                 for(Map.Entry<Double, HashSet<Point2D.Double>> entry: entrySet){
                     double key = entry.getKey();
                     data_size += Sets[j].get(key).size();
@@ -1010,7 +1017,11 @@ public class mainconnect implements ActionListener,ItemListener {
 //                        e.printStackTrace();
 //                    }
 //                    MyPolygon2D ptvPolygon = new MyPolygon2D(PTV.get(key));
+
+                    int[] dose_grade = new int[9];//30Gy~70Gy
+                    int slice_num = Sets[j].get(key).size();
                     for (int k = 0; k < Sets[j].get(key).size(); k++) {
+
                         math.geom2d.Point2D tmp = new math.geom2d.Point2D(it.next());
                         c[0] = tmp.getX();
                         c[1] = tmp.getY();
@@ -1036,6 +1047,12 @@ public class mainconnect implements ActionListener,ItemListener {
 //                                    doseParams.UnitsPerFraction / doseParams.PrescriptionPercent * 100;
                             double x0 = interpolate(inter, interdose, c);
                             doseList.add(x0);
+                            for (int l = 0; l < dose_grade.length; l++) {
+                                if ((x0/100)>(l*5+30)) {
+                                    dose_grade[l]++;
+                                }
+                            }
+
                         }
                         catch (ArrayIndexOutOfBoundsException e){
                             double x0 = 0;
@@ -1058,9 +1075,21 @@ public class mainconnect implements ActionListener,ItemListener {
                         distanceList.add(distance);
 //                        distribute[(int) Math.round(x0 / 5)]++;
                     }
+                    for (int l = 0; l < z_location.length; l++) {
+                        for (int m = 0; m < 9; m++) {
+                            if((dose_grade[m]/slice_num)>=(l+1)*0.25)
+                                z_location[l][m].add(key);
+                        }
+                    }
+                    for (int k = 0; k < dose_grade.length; k++) {
+                        System.out.println(dose_grade[k]);
+                    }
+                    System.out.println("size: "+slice_num);
+                    System.out.println("z: "+key);
                 }
 
                 System.out.println(rois[j]+" done!");
+
                 double[] doseD = new double[doseList.size()];
                 double[] distanceD = new double[distanceList.size()];
 
@@ -1070,6 +1099,23 @@ public class mainconnect implements ActionListener,ItemListener {
                 for (int i1 = 0; i1 < distanceList.size(); i1++) {
                     distanceD[i1] = distanceList.get(i1);
                 }
+
+                double[][][] length = new double[4][9][2];
+                for (int k = 0; k < 4; k++) {
+                    for (int l = 0; l < 9; l++) {
+                        System.out.println(z_location[k][l].hashCode());
+                        if (!z_location[k][l].isEmpty()) {
+//                            System.out.println(z_location[k][l].size());
+                            length[k][l][0] = Collections.min(z_location[k][l]);
+                            length[k][l][1] = Collections.max(z_location[k][l]);
+                            System.out.println("L(" + (l * 5 + 30) + ", " + (k * 25 + 25) + "%) = " + (length[k][l][1] - length[k][l][0]));
+                        }
+                        else {
+                            System.out.println("L(" + (l * 5 + 30) + ", " + (k * 25 + 25) + "%) = " + "NULL");
+                        }
+                    }
+                }
+
 //                REXPDouble doseVector = new REXPDouble(doseD);
 //                REXPDouble distanceVector = new REXPDouble(distanceD);
 
@@ -1117,7 +1163,7 @@ public class mainconnect implements ActionListener,ItemListener {
                         tmp[k+1] = String.valueOf(distribute[k]);
                     }
                     size = size * CT_STEP * CT_STEP * CT_STEPZ;
-                    cw.writeRecord(tmp);
+//                    cw.writeRecord(tmp);
 
                     //DVH积分
                     for (int k = 0; k < distribute.length; k++) {
@@ -1130,7 +1176,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //                        distribute[k] = 1-distribute[k];
                         tmp[k+1] = String.valueOf(distribute[k]);
                     }
-                    cw.writeRecord(tmp);
+//                    cw.writeRecord(tmp);
                     //max,min,mean
                     String mmmdose[] = new String[8];
                     mmmdose[0] = "mean dose";
@@ -1151,7 +1197,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     mmmdose[3] = String.valueOf(maximum);
                     mmmdose[5] = String.valueOf(minimum);
                     mmmdose[7] = String.valueOf(size);
-                    cw.writeRecord(mmmdose);
+//                    cw.writeRecord(mmmdose);
 //            c.eval("plot(dose,distance)");
 //            c.eval("save(dose,distance,file= '/home/p3rtp/ljy/save.RData')");
 //                rc.eval("save(dose,distance,file= 'C:/Users/ME/Desktop/"+plan.getNumber()+"dd.RData')");
@@ -1173,7 +1219,7 @@ public class mainconnect implements ActionListener,ItemListener {
                     e.printStackTrace();
                 }
             }
-            cw.close();
+//            cw.close();
 //            pr.close();
         }
 //        for (int k = 0; k < distribute.length; k++) {
