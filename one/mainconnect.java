@@ -45,8 +45,8 @@ public class mainconnect implements ActionListener,ItemListener {
     private JTextField dbText = new JTextField("clinical");
     private JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 2883\n" +
             "ORDER BY medicalrecordnumber\n" +
-            "ASC ",3,60);
-    private JTextArea queryArea = new JTextArea(10,60);
+            "ASC ",5,60);
+//    private JTextArea queryArea = new JTextArea(10,60);
     private JButton connButton = new JButton("Connect");
     private JButton queryButton = new JButton("Query");
     private JButton discButton = new JButton("Disconnect");
@@ -117,10 +117,10 @@ public class mainconnect implements ActionListener,ItemListener {
         cmdPanel.add(cmdLabel);
         cmdPanel.add(cmdArea);
 
-        queryArea.setEditable(false);
-        JScrollPane jsp = new JScrollPane(queryArea,
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+//        queryArea.setEditable(false);
+//        JScrollPane jsp = new JScrollPane(queryArea,
+//                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+//                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         JPanel northPanel = new JPanel();
         northPanel.setLayout(new GridLayout(1,2));
@@ -136,9 +136,9 @@ public class mainconnect implements ActionListener,ItemListener {
         midPanel.add(prcButton);
 
         JPanel southPanel = new JPanel();
-        southPanel.setLayout(new GridLayout(2,1));
+        southPanel.setLayout(new GridLayout(1,1));
         southPanel.add(cmdPanel);
-        southPanel.add(jsp);
+//        southPanel.add(jsp);
 
         connButton.addActionListener(this);
         queryButton.addActionListener(this);
@@ -750,7 +750,21 @@ public class mainconnect implements ActionListener,ItemListener {
                     +trial.getInstitution()+sep+"Mount_0"+sep + "Patient_" + trial.getNumber();
             String planPath = patientPath + sep + trial.getPlanId();
             List<String> files = new ArrayList<>();
-            CTParams ctParams = new CTParams(patientPath+sep+"ImageSet_0.header");
+            File dir = new File(patientPath);
+            File[] dirfiles = dir.listFiles();
+            List<String> headerlist = new ArrayList<>();
+
+            for (File tempfile : dirfiles) {
+                String fileName = tempfile.getName();
+                if (fileName.endsWith("header"))
+                    headerlist.add(fileName);
+            }
+            if (headerlist.size() > 1)
+                System.out.println("****Warning: More than ONE imageset!!****");
+
+            CTParams ctParams = new CTParams(patientPath+sep+headerlist.get(0));
+
+
             DoseParams doseParams = new DoseParams(planPath+sep+"plan.Trial");
             TreatParams treatParams = new TreatParams();
             for (int j = 0; j < doseParams.treatParams.size(); j++) {
