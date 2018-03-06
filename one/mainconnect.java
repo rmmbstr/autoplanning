@@ -43,7 +43,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //    private JPasswordField passText = new JPasswordField("59623528");
     private JPasswordField passText = new JPasswordField("launchpad");
     private JTextField dbText = new JTextField("clinical");
-    private JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 2883\n" +
+    private JTextArea cmdArea = new JTextArea("SELECT * FROM pros.patient WHERE institutionid = 2642\n" +
             "ORDER BY medicalrecordnumber\n" +
             "ASC ",5,60);
 //    private JTextArea queryArea = new JTextArea(10,60);
@@ -224,7 +224,7 @@ public class mainconnect implements ActionListener,ItemListener {
             tree = new JTree[rowNum];
 
             while (rs.next()) {
-                int mrc = rs.getInt(column[0]);
+                String mrc = rs.getString(column[0]);
                 int patientid = rs.getInt(column[1]);
                 String firstname = rs.getString(column[2]);
                 String lastname = rs.getString(column[3]);
@@ -233,7 +233,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 String gender = rs.getString(column[6]);
                 String patientpath = rs.getString(column[7]);
 //                String oncologist = rs.getString("radiationoncologist");
-                result[i][0] = Integer.toString(mrc);
+                result[i][0] = mrc;
                 result[i][1] = Integer.toString(patientid);
                 result[i][2] = firstname;
                 result[i][3] = lastname;
@@ -654,12 +654,12 @@ public class mainconnect implements ActionListener,ItemListener {
 //            }
 //        }
 //        System.out.println(fileNum);
-        for (int i = 0; i < files.size(); i++) {
-            String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d",
-                    Integer.parseInt(files.get(i)));
+//        for (String tmp : files) {
+//            String filePath = planPath+sep+"plan.Trial.binary."+String.format("%0"+3+"d",
+////                    Integer.parseInt(tmp));
 //            System.out.println(filePath);
 //            readDoseData(filePath, dose_data, doseParams.DoseWeight[i]);
-        }
+//        }
 
         System.out.println("Dose input finish");
 
@@ -759,10 +759,34 @@ public class mainconnect implements ActionListener,ItemListener {
                 if (fileName.endsWith("header"))
                     headerlist.add(fileName);
             }
-            if (headerlist.size() > 1)
+            CTParams ctParams;
+            if (headerlist.size() > 1) {
                 System.out.println("****Warning: More than ONE imageset!!****");
-
-            CTParams ctParams = new CTParams(patientPath+sep+headerlist.get(0));
+                int count = 0;
+                for (String header : headerlist) {
+                    System.out.println(count + " " + header);
+                    count++;
+                }
+                System.out.println("Please select an image header: 0~"+(headerlist.size()-1));
+                char read = '0';
+                try {
+                    read = (char) System.in.read();
+                }
+                catch(Exception e) {
+                    e.printStackTrace();
+                }
+                ctParams = new CTParams(patientPath+sep+headerlist.get(read-'0'));
+            }
+//                JFrame headerFrame = new JFrame();
+//                JComboBox<String> headerBox = new JComboBox<>();
+//                for (String header: headerlist)
+//                    headerBox.addItem(header);
+//                headerFrame.add(new JTextField("Select image header:"));
+//                headerFrame.add(headerBox);
+//                headerFrame.add(new JButton(("OK")))
+            else {
+                ctParams = new CTParams(patientPath+sep+headerlist.get(0));
+            }
 
 
             DoseParams doseParams = new DoseParams(planPath+sep+"plan.Trial");
