@@ -489,6 +489,7 @@ public class mainconnect implements ActionListener,ItemListener {
                 for (int j = 0; j < ROIS.length; j++) {
                     jPanel.add(new JLabel(ROIS[j]));
                     Boxes[i][j] = new JComboBox<>(roiList);
+                    Boxes[i][j].setSelectedItem("ESO");
                     jPanel.add(Boxes[i][j]);
                 }
                 mainPanel.add(jPanel);
@@ -961,7 +962,7 @@ public class mainconnect implements ActionListener,ItemListener {
 //                    Charset.forName("UTF-8"));
 //            CsvWriter cw = new CsvWriter("/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
 //              trial.getName()+".csv",',',Charset.forName("UTF-8"));
-            System.out.println("Writing csv to "+"/home/p3rtp/ljy/csv/"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
+            System.out.println("Writing csv to "+"./"+trial.getMrn()+"_"+trial.getPlanId()+"_"+
                     trial.getName()+".csv");
 //            CsvWriter cw = new CsvWriter("C://Users/ME/Desktop/"+trial.getNumber()+"_"+trial.getPlanId()+"_"+
 //                    trial.getName()+".csv",',', Charset.forName("UTF-8"));
@@ -1101,9 +1102,9 @@ public class mainconnect implements ActionListener,ItemListener {
                 }
 
                 double[][][] length = new double[4][9][2];
-                for (int k = 0; k < 4; k++) {
+                for (int k = 3; k < 4; k++) {
                     for (int l = 0; l < 9; l++) {
-                        System.out.println(z_location[k][l].hashCode());
+//                        System.out.println(z_location[k][l].hashCode());
                         if (!z_location[k][l].isEmpty()) {
 //                            System.out.println(z_location[k][l].size());
                             length[k][l][0] = Collections.min(z_location[k][l]);
